@@ -1,0 +1,16 @@
+{
+  "name": "cojs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:benfoxall/cojs.git",
+  "author": "Ben Foxall <benfoxall@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "create": "AWS_PROFILE=default AWS_REGION=eu-west-2 arc-create",
+    "deploy": "AWS_PROFILE=default AWS_REGION=eu-west-2 arc-deploy",
+    "start": "NODE_ENV=testing arc-sandbox"
+  },
+  "dependencies": {
+    "@architect/workflows": "^1.0.10"
+  }
+}

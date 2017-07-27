@@ -18,20 +18,52 @@
     </style>
   </head>
   <body>
-    <ul>
-      <li>
-        <code class="input" contenteditable>
-          a = Math.random()
-        </code>
-        <code class="output"></code>
-      </li>
-      <li>
-        <code class="input" contenteditable>
-          b = a * 2
-        </code>
-        <code class="output"></code>
-      </li>
-    </ul>
+    <ul></ul>
     <button name="add" id="add">+</button>
+    <script>
+      const el = document.createElement.bind(document)
+      const qs = document.querySelector.bind(document)
+      const qsa = document.querySelectorAll.bind(document)
+
+      const cells = [
+        'a = Math.random()',
+        'b = a * 2'
+      ]
+
+      const root = qs('ul')
+
+      // I'll probably use react or something, but for now…
+      const render = () => {
+        root.innerHTML = ''
+        cells.forEach((cell, i) => {
+          const $li = el('li')
+          const $in = el('code')
+          const $out = el('code')
+
+          $in.setAttribute('contenteditable', true)
+          $in.className = 'input'
+          $out.className = 'output'
+
+          $in.innerText = cell
+
+          $in.addEventListener('keyup', e => {
+            cells[i] = $in.innerText
+          })
+
+
+          $li.appendChild($in)
+          $li.appendChild($out)
+          root.appendChild($li)
+        })
+      }
+
+      render()
+
+      qs('#add').addEventListener('click', () => {
+        cells.push('// code here')
+        render()
+      })
+
+    </script>
   </body>
 </html>

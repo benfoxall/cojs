@@ -4,10 +4,34 @@
     <meta charset="utf-8">
     <title>cojs.co</title>
     <style media="screen">
-      body {font-family: sans-serif;}
+      body {font-family: monospace; max-width: 50em;margin:auto;}
+      ul {padding:0;list-style: none}
+      li { padding: .5em; }
+      .input, .output{padding:1em;min-height: 1em;}
+      .input {border-left: 2px solid #fc0; border-bottom: 1px solid #eee}
+      .output {border-left: 2px solid #ccc}
+      code:focus{background: #f5f5f5;outline: none}
+      code { padding: 1em; display: block; }
+      code.error {border-color: #c10000}
+      #add { background: #f4f4f4; border:none; font-size: 1em; padding: .5em; width: 3em;height:3em;cursor: pointer; font-weight: 800;border-radius: 5px; }
+      #add:hover {background: #ccc}
     </style>
   </head>
   <body>
-    <h1>cojs</h1>
+    <ul>
+      <li>
+        <code class="input" contenteditable>
+          a = Math.random()
+        </code>
+        <code class="output"></code>
+      </li>
+      <li>
+        <code class="input" contenteditable>
+          b = a * 2
+        </code>
+        <code class="output"></code>
+      </li>
+    </ul>
+    <button name="add" id="add">+</button>
   </body>
 </html>

@@ -1,6 +1,0 @@
-{
-  "name": "cojs-post-session",
-  "dependencies": {
-    "@architect/functions": "^1.3.0"
-  }
-}

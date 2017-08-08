@@ -1,5 +1,15 @@
 const gulp = require('gulp')
 const awspublish = require('gulp-awspublish')
+const rollup = require('rollup-stream')
+const source = require('vinyl-source-stream')
+
+gulp.task('rollup', () => {
+  return rollup({
+      entry: './public.src/main.js'
+    })
+    .pipe(source('main.js'))
+    .pipe(gulp.dest('./public'))
+})
 
 gulp.task('publish', () => {
 

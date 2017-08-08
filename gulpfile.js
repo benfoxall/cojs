@@ -10,7 +10,7 @@ gulp.task('publish', () => {
     }
   })
 
-  return gulp.src('./static/*')
+  return gulp.src('./public/*')
     .pipe(publisher.publish({}))
     .pipe(awspublish.reporter())
 })

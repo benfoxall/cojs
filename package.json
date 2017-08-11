@@ -8,6 +8,7 @@
   "scripts": {},
   "dependencies": {},
   "devDependencies": {
+    "esprima": "^4.0.0",
     "gulp": "^3.9.1",
     "gulp-awspublish": "^3.3.0",
     "rollup-stream": "^1.23.1",

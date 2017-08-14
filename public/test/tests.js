@@ -12,6 +12,26 @@ describe('Evaluate', () => {
         .to.eql({a: 1, b: 2})
     })
 
+    it('handles let & const', () => {
+      expect(cojs.evaluate('let a = 31', {}, ['a'], []))
+        .to.eql({a: 31})
+
+      expect(cojs.evaluate('const a = 41', {}, ['a'], []))
+        .to.eql({a: 41})
+    })
+
+    it('handles loops', () => {
+      expect(cojs.evaluate(`let a = 1;
+        for(i = 0; i < 10; i++) {
+          a *= 2
+        }
+        `, {}, ['a', 'i'], []))
+        .to.eql({a: 1024, i: 10})
+
+      expect(cojs.evaluate('const a = 41', {}, ['a'], []))
+        .to.eql({a: 41})
+    })
+
   })
 
   describe('state', () => {
@@ -32,7 +52,17 @@ describe('Evaluate', () => {
 
   })
 
-  xdescribe('weirdness', () => {
+  xdescribe('bugs/weirdness', () => {
+
+    it('protects loops', () => {
+      expect(cojs.evaluate(
+        'for(a = 0; a < 10; i--) {}; b = 43',
+        {},
+        ['a', 'b'],
+        []))
+        .to.eql({b: 43})
+    })
+
     it('a = 42', () => {
       expect(cojs.evaluate(
         'a = 42',

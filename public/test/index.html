@@ -9,8 +9,12 @@
   <body>
     <div id="mocha"></div>
     <script src="mocha.js"></script>
+    <script src="expect.js"></script>
     <script>mocha.setup('bdd');</script>
+
+    <script src="../main.js"></script>
     <script src="tests.js"></script>
+
     <script>
       mocha.run();
     </script>

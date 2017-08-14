@@ -7,4 +7,12 @@ describe('Evaluate', function() {
 
   })
 
+
+  it('should handle multiple', () => {
+
+    expect(cojs.evaluate('a = 1; b = 2', {}, ['a', 'b'], []))
+      .to.eql({a: 1, b: 2})
+
+  })
+
 })

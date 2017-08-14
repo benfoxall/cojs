@@ -1,16 +1,15 @@
 var cojs = (function (exports) {
 'use strict';
 
-var evaluate = function evaluate(code) {
-  var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  var takes = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-  var gives = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : [];
+var evaluate = function evaluate(code, state, gives, takes) {
 
+  var intrumented = code + '; return {' + gives.join(', ') + '}';
 
-  var a = void 0;
-  eval(code);
+  var args = takes.concat(intrumented);
 
-  return { a: a };
+  var fn = Function.apply(null, args);
+
+  return fn();
 };
 
 exports.evaluate = evaluate;

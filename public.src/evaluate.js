@@ -1,9 +1,12 @@
-const evaluate = (code, state = {}, takes = [], gives = []) => {
+const evaluate = (code, state, gives, takes) => {
 
-  let a
-  eval(code)
+  const intrumented = `${code}; return {${gives.join(', ')}}`
 
-  return {a: a}
+  const args = takes.concat(intrumented)
+
+  const fn = Function.apply(null, args)
+
+  return fn()
 
 }
 

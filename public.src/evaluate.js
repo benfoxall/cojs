@@ -6,7 +6,7 @@ const evaluate = (code, state, gives, takes) => {
 
   const fn = Function.apply(null, args)
 
-  return fn()
+  return fn.apply(null, takes.map(v => state[v]))
 
 }
 

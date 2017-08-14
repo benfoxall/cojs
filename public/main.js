@@ -9,7 +9,9 @@ var evaluate = function evaluate(code, state, gives, takes) {
 
   var fn = Function.apply(null, args);
 
-  return fn();
+  return fn.apply(null, takes.map(function (v) {
+    return state[v];
+  }));
 };
 
 exports.evaluate = evaluate;

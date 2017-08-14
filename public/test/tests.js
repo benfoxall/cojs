@@ -52,18 +52,30 @@ describe('Evaluate', () => {
 
   })
 
-  xdescribe('bugs/weirdness', () => {
+  describe('problems', () => {
+
+    it('throws syntax errors', () => {
+      expect(
+        () => cojs.evaluate('then what yeah', {}, [], []))
+        .to.throwException((e) => {
+          expect(e).to.be.a(SyntaxError)
+        });
+
+    })
+  })
+
+  describe('bugs/weirdness', () => {
 
     it('protects loops', () => {
       expect(cojs.evaluate(
-        'for(a = 0; a < 10; i--) {}; b = 43',
+        'for(a = 0; a < 10; a--) {}; b = 43',
         {},
         ['a', 'b'],
-        []))
-        .to.eql({b: 43})
+        []).b)
+        .to.eql(43)
     })
 
-    it('a = 42', () => {
+    xit('a = 42', () => {
       expect(cojs.evaluate(
         'a = 42',
         {},

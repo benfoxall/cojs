@@ -16,7 +16,7 @@ const parse = (code) => {
   const gives = new Set
   const takes = new Set
 
-  const ast = esprima.parseScript(code, {}, function (node, meta) {
+  const ast = esprima.parseScript(code, {range: true}, function (node, meta) {
     if (declaresVariable(node)) {
       gives.add(node.id.name)
     }
@@ -56,13 +56,27 @@ const parse = (code) => {
 
       if(found && !gives.has(found.name)) takes.add(found.name)
     }
+
   })
 
   console.log(ast)
 
+
+  // shallow look for where we could inject extra return
+  let last_expression_index = 0
+
+  ast.body.forEach(node => {
+    if(node.type == 'ExpressionStatement') {
+      last_expression_index = node.range[0]
+    }
+  })
+
+
+
   return {
     gives: Array.from(gives),
-    takes: Array.from(takes)
+    takes: Array.from(takes),
+    '_': last_expression_index,
   }
 
 }

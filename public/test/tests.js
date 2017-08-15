@@ -90,18 +90,35 @@ describe('Evaluate', () => {
 
 describe('Parsing', () => {
 
+
+  const testParse = (source, output) => {
+    const result = cojs.parse(source)
+
+    if(output.gives) {
+      expect(result.gives).to.eql(output.gives)
+    }
+
+    if(output.takes) {
+      expect(result.takes).to.eql(output.takes)
+    }
+  }
+
+
+
   describe('basic gives', () => {
 
     it('var a = 0', () => {
-      expect(cojs.parse('var a = 0'))
-        .to.eql({gives: ['a'], takes: []})
-
+      testParse(
+        `var a = 0`,
+        {gives: ['a'], takes: []}
+      )
     })
 
     it('var a = 0; const b = 12', () => {
-      expect(cojs.parse('var a = 0; const b = 12'))
-        .to.eql({gives: ['a', 'b'], takes: []})
-
+      testParse(
+        'var a = 0; const b = 12',
+        {gives: ['a', 'b'], takes: []}
+      )
     })
 
   })
@@ -110,38 +127,40 @@ describe('Parsing', () => {
   describe('edges', () => {
 
     it('a = b', () => {
-      expect(cojs.parse('a = b'))
-        .to.eql({gives: ['a'], takes: ['b']})
-
+      testParse('a = b',
+        {gives: ['a'], takes: ['b']}
+      )
     })
 
     it('ignores reuse', () => {
-      expect(cojs.parse(`
+      testParse(`
           const x = 123
           const y = x * 1234
-        `))
-        .to.eql({gives: ['x','y'], takes: []})
+        `,
+          {gives: ['x','y'], takes: []}
+        )
     })
 
     it('handles objects', () => {
-
-      expect(cojs.parse('a = Math.random()'))
-        .to.eql({gives: ['a'], takes: ['Math']})
+      testParse('a = Math.random()',
+        {gives: ['a'], takes: ['Math']}
+      )
     })
-
   })
 
   describe('basic takes', () => {
 
     it('var a = b * 2', () => {
-      expect(cojs.parse('var a = b * 2'))
-        .to.eql({gives: ['a'], takes: ['b']})
+      testParse('var a = b * 2',
+        {gives: ['a'], takes: ['b']}
+      )
 
     })
 
     it('var a = b * c * d * e * f', () => {
-      expect(cojs.parse('var a = b * c * d * e * f'))
-        .to.eql({gives: ['a'], takes: ['b', 'c', 'd', 'e', 'f']})
+      testParse('var a = b * c * d * e * f',
+        {gives: ['a'], takes: ['b', 'c', 'd', 'e', 'f']}
+      )
 
     })
 

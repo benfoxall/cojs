@@ -453,43 +453,61 @@ var evaluate = function evaluate(code, state, gives, takes) {
   }).concat(loopProtect_1.protect));
 };
 
+// Depth first search
+var traverse = function traverse(rest, expand, check) {
+  var node = rest.pop();
+  if (check(node)) return node;
+  var next = [].concat(expand(node)).concat(rest);
+  return traverse(next, expand, check);
+};
+
 var parse = function parse(code) {
 
   var declaresVariable = function declaresVariable(node) {
     return node.type == 'VariableDeclarator';
   };
 
-  var identifiesVariable = function identifiesVariable(node) {
-    return node.type == 'Identifier';
-  };
-
   var gives = new Set();
   var takes = new Set();
 
-  esprima.parseScript(code, {}, function (node, meta) {
+  var ast = esprima.parseScript(code, {}, function (node, meta) {
     if (declaresVariable(node)) {
       gives.add(node.id.name);
-      if (takes.has(node.id.name)) {
-        // console.log("reassigning takes as gives")
-        takes.delete(node.id.name);
-      }
     }
 
     if (node.type == 'AssignmentExpression' && node.operator == '=') {
-      gives.add(node.left.name);
-      if (takes.has(node.left.name)) {
-        // console.log("reassigning takes as gives")
-        takes.delete(node.left.name);
+      if (node.left.type == 'Identifier') {
+        gives.add(node.left.name);
+      }
+
+      if (node.right.type == 'Identifier') {
+        if (!gives.has(node.right.name)) takes.add(node.right.name);
       }
     }
 
-    if (node.type == 'Identifier') {
-      if (!gives.has(node.name)) {
-        console.log('takes', node.name);
-        takes.add(node.name);
+    if (node.type == 'BinaryExpression') {
+      if (node.left.type == 'Identifier') {
+        if (!gives.has(node.left.name)) takes.add(node.left.name);
+      }
+
+      if (node.right.type == 'Identifier') {
+        if (!gives.has(node.right.name)) takes.add(node.right.name);
       }
     }
+
+    if (node.type == 'CallExpression') {
+
+      var found = traverse([node.callee], function (n) {
+        return n.object;
+      }, function (n) {
+        return n.type == "Identifier";
+      });
+
+      if (found && !gives.has(found.name)) takes.add(found.name);
+    }
   });
+
+  console.log(ast);
 
   return {
     gives: Array.from(gives),

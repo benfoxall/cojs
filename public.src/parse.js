@@ -1,39 +1,64 @@
+
+// Depth first search
+const traverse = (rest, expand, check) => {
+  const node = rest.pop()
+  if(check(node)) return node
+  const next = [].concat(expand(node)).concat(rest)
+  return traverse(next, expand, check)
+}
+
+
 const parse = (code) => {
 
   const declaresVariable = (node) =>
     node.type == 'VariableDeclarator'
 
-  const identifiesVariable = (node) =>
-    node.type == 'Identifier'
-
   const gives = new Set
   const takes = new Set
 
-  esprima.parseScript(code, {}, function (node, meta) {
+  const ast = esprima.parseScript(code, {}, function (node, meta) {
     if (declaresVariable(node)) {
       gives.add(node.id.name)
-      if(takes.has(node.id.name)) {
-        // console.log("reassigning takes as gives")
-        takes.delete(node.id.name)
-      }
     }
 
 
     if(node.type == 'AssignmentExpression' && node.operator == '=') {
-      gives.add(node.left.name)
-      if(takes.has(node.left.name)) {
-        // console.log("reassigning takes as gives")
-        takes.delete(node.left.name)
+      if(node.left.type == 'Identifier') {
+        gives.add(node.left.name)
+      }
+
+      if(node.right.type == 'Identifier') {
+        if(!gives.has(node.right.name))
+        takes.add(node.right.name)
+      }
+
+    }
+
+    if(node.type == 'BinaryExpression') {
+      if(node.left.type == 'Identifier') {
+        if(!gives.has(node.left.name))
+        takes.add(node.left.name)
+      }
+
+      if(node.right.type == 'Identifier') {
+        if(!gives.has(node.right.name))
+        takes.add(node.right.name)
       }
     }
 
-    if (node.type == 'Identifier') {
-      if(!gives.has(node.name)) {
-        console.log('takes', node.name)
-        takes.add(node.name)
-      }
+    if(node.type == 'CallExpression') {
+
+      const found = traverse(
+        [node.callee],
+        n => n.object,
+        n => n.type == "Identifier"
+      )
+
+      if(found && !gives.has(found.name)) takes.add(found.name)
     }
   })
+
+  console.log(ast)
 
   return {
     gives: Array.from(gives),

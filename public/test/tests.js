@@ -106,6 +106,31 @@ describe('Parsing', () => {
 
   })
 
+
+  describe('edges', () => {
+
+    it('a = b', () => {
+      expect(cojs.parse('a = b'))
+        .to.eql({gives: ['a'], takes: ['b']})
+
+    })
+
+    it('ignores reuse', () => {
+      expect(cojs.parse(`
+          const x = 123
+          const y = x * 1234
+        `))
+        .to.eql({gives: ['x','y'], takes: []})
+    })
+
+    it('handles objects', () => {
+
+      expect(cojs.parse('a = Math.random()'))
+        .to.eql({gives: ['a'], takes: ['Math']})
+    })
+
+  })
+
   describe('basic takes', () => {
 
     it('var a = b * 2', () => {
@@ -113,7 +138,6 @@ describe('Parsing', () => {
         .to.eql({gives: ['a'], takes: ['b']})
 
     })
-
 
     it('var a = b * c * d * e * f', () => {
       expect(cojs.parse('var a = b * c * d * e * f'))

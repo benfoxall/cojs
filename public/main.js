@@ -469,16 +469,25 @@ var parse = function parse(code) {
   esprima.parseScript(code, {}, function (node, meta) {
     if (declaresVariable(node)) {
       gives.add(node.id.name);
-
       if (takes.has(node.id.name)) {
         // console.log("reassigning takes as gives")
         takes.delete(node.id.name);
       }
     }
 
+    if (node.type == 'AssignmentExpression' && node.operator == '=') {
+      gives.add(node.left.name);
+      if (takes.has(node.left.name)) {
+        // console.log("reassigning takes as gives")
+        takes.delete(node.left.name);
+      }
+    }
+
     if (node.type == 'Identifier') {
-      console.log('takes', node.name);
-      takes.add(node.name);
+      if (!gives.has(node.name)) {
+        console.log('takes', node.name);
+        takes.add(node.name);
+      }
     }
   });
 

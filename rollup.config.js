@@ -14,5 +14,8 @@ export default {
       exclude: 'node_modules/**'
     })
   ],
-  format: 'iife'
+  format: 'iife',
+  globals: {
+    'esprima': 'esprima'
+  }
 }

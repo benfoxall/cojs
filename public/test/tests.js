@@ -86,3 +86,41 @@ describe('Evaluate', () => {
   })
 
 })
+
+
+describe('Parsing', () => {
+
+  describe('basic gives', () => {
+
+    it('var a = 0', () => {
+      expect(cojs.parse('var a = 0'))
+        .to.eql({gives: ['a'], takes: []})
+
+    })
+
+    it('var a = 0; const b = 12', () => {
+      expect(cojs.parse('var a = 0; const b = 12'))
+        .to.eql({gives: ['a', 'b'], takes: []})
+
+    })
+
+  })
+
+  describe('basic takes', () => {
+
+    it('var a = b * 2', () => {
+      expect(cojs.parse('var a = b * 2'))
+        .to.eql({gives: ['a'], takes: ['b']})
+
+    })
+
+
+    it('var a = b * c * d * e * f', () => {
+      expect(cojs.parse('var a = b * c * d * e * f'))
+        .to.eql({gives: ['a'], takes: ['b', 'c', 'd', 'e', 'f']})
+
+    })
+
+  })
+
+})

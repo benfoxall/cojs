@@ -453,7 +453,43 @@ var evaluate = function evaluate(code, state, gives, takes) {
   }).concat(loopProtect_1.protect));
 };
 
+var parse = function parse(code) {
+
+  var declaresVariable = function declaresVariable(node) {
+    return node.type == 'VariableDeclarator';
+  };
+
+  var identifiesVariable = function identifiesVariable(node) {
+    return node.type == 'Identifier';
+  };
+
+  var gives = new Set();
+  var takes = new Set();
+
+  esprima.parseScript(code, {}, function (node, meta) {
+    if (declaresVariable(node)) {
+      gives.add(node.id.name);
+
+      if (takes.has(node.id.name)) {
+        // console.log("reassigning takes as gives")
+        takes.delete(node.id.name);
+      }
+    }
+
+    if (node.type == 'Identifier') {
+      console.log('takes', node.name);
+      takes.add(node.name);
+    }
+  });
+
+  return {
+    gives: Array.from(gives),
+    takes: Array.from(takes)
+  };
+};
+
 exports.evaluate = evaluate;
+exports.parse = parse;
 
 return exports;
 

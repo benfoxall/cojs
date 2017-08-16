@@ -525,8 +525,292 @@ var parse = function parse(code) {
   };
 };
 
+function noop() {}
+
+function assign(target) {
+	var k,
+		source,
+		i = 1,
+		len = arguments.length;
+	for (; i < len; i++) {
+		source = arguments[i];
+		for (k in source) target[k] = source[k];
+	}
+
+	return target;
+}
+
+function appendNode(node, target) {
+	target.appendChild(node);
+}
+
+function insertNode(node, target, anchor) {
+	target.insertBefore(node, anchor);
+}
+
+function detachNode(node) {
+	node.parentNode.removeChild(node);
+}
+
+function createElement(name) {
+	return document.createElement(name);
+}
+
+function createText(data) {
+	return document.createTextNode(data);
+}
+
+function destroy(detach) {
+	this.destroy = this.set = this.get = noop;
+	this.fire('destroy');
+
+	if (detach !== false) this._fragment.unmount();
+	this._fragment.destroy();
+	this._fragment = this._state = null;
+}
+
+function differs(a, b) {
+	return a !== b || ((a && typeof a === 'object') || typeof a === 'function');
+}
+
+function dispatchObservers(component, group, changed, newState, oldState) {
+	for (var key in group) {
+		if (!changed[key]) continue;
+
+		var newValue = newState[key];
+		var oldValue = oldState[key];
+
+		var callbacks = group[key];
+		if (!callbacks) continue;
+
+		for (var i = 0; i < callbacks.length; i += 1) {
+			var callback = callbacks[i];
+			if (callback.__calling) continue;
+
+			callback.__calling = true;
+			callback.call(component, newValue, oldValue);
+			callback.__calling = false;
+		}
+	}
+}
+
+function get(key) {
+	return key ? this._state[key] : this._state;
+}
+
+function fire(eventName, data) {
+	var handlers =
+		eventName in this._handlers && this._handlers[eventName].slice();
+	if (!handlers) return;
+
+	for (var i = 0; i < handlers.length; i += 1) {
+		handlers[i].call(this, data);
+	}
+}
+
+function observe(key, callback, options) {
+	var group = options && options.defer
+		? this._observers.post
+		: this._observers.pre;
+
+	(group[key] || (group[key] = [])).push(callback);
+
+	if (!options || options.init !== false) {
+		callback.__calling = true;
+		callback.call(this, this._state[key]);
+		callback.__calling = false;
+	}
+
+	return {
+		cancel: function() {
+			var index = group[key].indexOf(callback);
+			if (~index) group[key].splice(index, 1);
+		}
+	};
+}
+
+function on(eventName, handler) {
+	if (eventName === 'teardown') return this.on('destroy', handler);
+
+	var handlers = this._handlers[eventName] || (this._handlers[eventName] = []);
+	handlers.push(handler);
+
+	return {
+		cancel: function() {
+			var index = handlers.indexOf(handler);
+			if (~index) handlers.splice(index, 1);
+		}
+	};
+}
+
+function set(newState) {
+	this._set(assign({}, newState));
+	if (this._root._lock) return;
+	this._root._lock = true;
+	callAll(this._root._beforecreate);
+	callAll(this._root._oncreate);
+	callAll(this._root._aftercreate);
+	this._root._lock = false;
+}
+
+function _set(newState) {
+	var oldState = this._state,
+		changed = {},
+		dirty = false;
+
+	for (var key in newState) {
+		if (differs(newState[key], oldState[key])) changed[key] = dirty = true;
+	}
+	if (!dirty) return;
+
+	this._state = assign({}, oldState, newState);
+	this._recompute(changed, this._state, oldState, false);
+	if (this._bind) this._bind(changed, this._state);
+	dispatchObservers(this, this._observers.pre, changed, this._state, oldState);
+	this._fragment.update(changed, this._state);
+	dispatchObservers(this, this._observers.post, changed, this._state, oldState);
+}
+
+function callAll(fns) {
+	while (fns && fns.length) fns.pop()();
+}
+
+var proto = {
+	destroy: destroy,
+	get: get,
+	fire: fire,
+	observe: observe,
+	on: on,
+	set: set,
+	teardown: destroy,
+	_recompute: noop,
+	_set: _set
+};
+
+function create_main_fragment(state, component) {
+	var ul, li, div, text, text_1, div_1, text_2, li_1, div_2, text_4, text_5, div_3, text_6, li_2, div_4, text_8, text_9, div_5, text_10, text_12, button, text_13;
+
+	return {
+		create: function create() {
+			ul = createElement('ul');
+			li = createElement('li');
+			div = createElement('div');
+			text = createText("const a = 123\nconst b = 12\nconst c = 1245\n\nconst x = 123444");
+			text_1 = createText("\n    ");
+			div_1 = createElement('div');
+			text_2 = createText("0.23555");
+			li_1 = createElement('li');
+			div_2 = createElement('div');
+			text_4 = createText("Math.random()");
+			text_5 = createText("\n    ");
+			div_3 = createElement('div');
+			text_6 = createText("0.23555");
+			li_2 = createElement('li');
+			div_4 = createElement('div');
+			text_8 = createText("42");
+			text_9 = createText("\n    ");
+			div_5 = createElement('div');
+			text_10 = createText("42");
+			text_12 = createText("\n\n");
+			button = createElement('button');
+			text_13 = createText("+");
+			this.hydrate();
+		},
+
+		hydrate: function hydrate(nodes) {
+			li.className = "cell";
+			div.className = "input";
+			div.contentEditable = true;
+			div_1.className = "output";
+			li_1.className = "cell";
+			div_2.className = "input";
+			div_2.contentEditable = true;
+			div_3.className = "output";
+			li_2.className = "cell";
+			div_4.className = "input";
+			div_4.contentEditable = true;
+			div_5.className = "output";
+			button.name = "add";
+			button.id = "add";
+		},
+
+		mount: function mount(target, anchor) {
+			insertNode(ul, target, anchor);
+			appendNode(li, ul);
+			appendNode(div, li);
+			appendNode(text, div);
+			appendNode(text_1, li);
+			appendNode(div_1, li);
+			appendNode(text_2, div_1);
+			appendNode(li_1, ul);
+			appendNode(div_2, li_1);
+			appendNode(text_4, div_2);
+			appendNode(text_5, li_1);
+			appendNode(div_3, li_1);
+			appendNode(text_6, div_3);
+			appendNode(li_2, ul);
+			appendNode(div_4, li_2);
+			appendNode(text_8, div_4);
+			appendNode(text_9, li_2);
+			appendNode(div_5, li_2);
+			appendNode(text_10, div_5);
+			insertNode(text_12, target, anchor);
+			insertNode(button, target, anchor);
+			appendNode(text_13, button);
+		},
+
+		update: noop,
+
+		unmount: function unmount() {
+			detachNode(ul);
+			detachNode(text_12);
+			detachNode(button);
+		},
+
+		destroy: noop
+	};
+}
+
+function App(options) {
+	options = options || {};
+	this._state = options.data || {};
+
+	this._observers = {
+		pre: Object.create(null),
+		post: Object.create(null)
+	};
+
+	this._handlers = Object.create(null);
+
+	this._root = options._root || this;
+	this._yield = options._yield;
+	this._bind = options._bind;
+
+	this._fragment = create_main_fragment(this._state, this);
+
+	if (options.target) {
+		this._fragment.create();
+		this._fragment.mount(options.target, null);
+	}
+}
+
+assign(App.prototype, proto);
+
+var render = function render(node) {
+
+  var app = new App({
+    target: node
+  });
+
+  app.set({ name: 'everybody' });
+};
+
+var s = document.currentScript;
+if (s && s.hasAttribute('data-render')) render(document.body);
+
 exports.evaluate = evaluate;
 exports.parse = parse;
+exports.render = render;
 
 return exports;
 

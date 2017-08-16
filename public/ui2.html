@@ -3,18 +3,13 @@
   <head>
     <meta charset="utf-8">
     <title>cojs.co</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:100,100i,400,700,700i" rel="stylesheet">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <style media="screen">
-      body {font-family: monospace; max-width: 50em;margin:auto;}
-      ul {padding:0;list-style: none}
-      /*li { padding: .5em; }*/
+      body {font-family: monospace; transition: 1s}
+      ul {padding:0;list-style: none; margin:0}
       .input, .output{padding:1em;min-height: 1em;}
-      /*.input {border-left: 2px solid #fc0; border-bottom: 1px solid #eee}*/
-      /*.output {border-left: 2px solid #ccc}*/
-      /*code:focus{background: #f5f5f5;outline: none}
-      code { padding: 1em; display: block; }
-      code.error {border-color: #c10000}*/
-
-
       #add {
         background: #fff;
         border:none;
@@ -38,7 +33,7 @@
 
       body {
         background: #e2e1e0;
-        padding: 3em;
+        padding: 5em;
         font-family: 'Roboto Mono', monospace;
         text-align: center;
       }
@@ -48,9 +43,8 @@
         background: #fff;
         border-radius: 2px;
         box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
-
         display: flex;
-        margin: 2em 0;
+        margin-bottom: 2em;
       }
       .input {
         flex: 2;
@@ -60,8 +54,24 @@
         border-left: 1px solid #e2e1e0;
         background: #f1f1f1;
       }
+
+      @media only screen and (max-width : 650px) {
+        body {
+          padding: 1em;
+        }
+        .cell {
+          flex-direction: column;
+        }
+        .output {
+          border-left: none;
+          border-top: 1px solid #e2e1e0;
+        }
+      }
+      @media (light-level: dim) {
+        body {background: #000}
+      }
     </style>
-    <link href="https://fonts.googleapis.com/css?family=Roboto+Mono:100,100i,400,700,700i" rel="stylesheet">
+
 
   </head>
   <body>

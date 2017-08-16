@@ -1,20 +1,10 @@
 <ul>
-  <li class="cell">
-    <div class="input" contenteditable>const a = 123
-const b = 12
-const c = 1245
-
-const x = 123444</div>
-    <div class="output">0.23555</div>
-  </li>
-  <li class="cell">
-    <div class="input" contenteditable>Math.random() </div>
-    <div class="output">0.23555</div>
-  </li>
-  <li class="cell">
-    <div class="input" contenteditable>42</div>
-    <div class="output">42</div>
-  </li>
+  {{#each cells as cell}}
+    <li class="cell">
+      <div class="input" contenteditable>{{cell.code}}</div>
+      <div class="output">z</div>
+    </li>
+  {{/each}}
 </ul>
 
 <button name="add" id="add">+</button>

@@ -552,6 +552,12 @@ function detachNode(node) {
 	node.parentNode.removeChild(node);
 }
 
+function destroyEach(iterations, detach, start) {
+	for (var i = start; i < iterations.length; i += 1) {
+		if (iterations[i]) iterations[i].destroy(detach);
+	}
+}
+
 function createElement(name) {
 	return document.createElement(name);
 }
@@ -688,32 +694,103 @@ var proto = {
 };
 
 function create_main_fragment(state, component) {
-	var ul, li, div, text, text_1, div_1, text_2, li_1, div_2, text_4, text_5, div_3, text_6, li_2, div_4, text_8, text_9, div_5, text_10, text_12, button, text_13;
+	var ul, text, button, text_1;
+
+	var each_block_value = state.cells;
+
+	var each_block_iterations = [];
+
+	for (var i = 0; i < each_block_value.length; i += 1) {
+		each_block_iterations[i] = create_each_block(state, each_block_value, each_block_value[i], i, component);
+	}
 
 	return {
 		create: function create() {
 			ul = createElement('ul');
+
+			for (var i = 0; i < each_block_iterations.length; i += 1) {
+				each_block_iterations[i].create();
+			}
+
+			text = createText("\n\n");
+			button = createElement('button');
+			text_1 = createText("+");
+			this.hydrate();
+		},
+
+		hydrate: function hydrate(nodes) {
+			button.name = "add";
+			button.id = "add";
+		},
+
+		mount: function mount(target, anchor) {
+			insertNode(ul, target, anchor);
+
+			for (var i = 0; i < each_block_iterations.length; i += 1) {
+				each_block_iterations[i].mount(ul, null);
+			}
+
+			insertNode(text, target, anchor);
+			insertNode(button, target, anchor);
+			appendNode(text_1, button);
+		},
+
+		update: function update(changed, state) {
+			var each_block_value = state.cells;
+
+			if (changed.cells) {
+				for (var i = 0; i < each_block_value.length; i += 1) {
+					if (each_block_iterations[i]) {
+						each_block_iterations[i].update(changed, state, each_block_value, each_block_value[i], i);
+					} else {
+						each_block_iterations[i] = create_each_block(state, each_block_value, each_block_value[i], i, component);
+						each_block_iterations[i].create();
+						each_block_iterations[i].mount(ul, null);
+					}
+				}
+
+				for (; i < each_block_iterations.length; i += 1) {
+					each_block_iterations[i].unmount();
+					each_block_iterations[i].destroy();
+				}
+				each_block_iterations.length = each_block_value.length;
+			}
+		},
+
+		unmount: function unmount() {
+			detachNode(ul);
+
+			for (var i = 0; i < each_block_iterations.length; i += 1) {
+				each_block_iterations[i].unmount();
+			}
+
+			detachNode(text);
+			detachNode(button);
+		},
+
+		destroy: function destroy$$1() {
+			destroyEach(each_block_iterations, false, 0);
+		}
+	};
+}
+
+function create_each_block(state, each_block_value, cell, cell_index, component) {
+	var li,
+	    div,
+	    text_value = cell.code,
+	    text,
+	    text_1,
+	    div_1,
+	    text_2;
+
+	return {
+		create: function create() {
 			li = createElement('li');
 			div = createElement('div');
-			text = createText("const a = 123\nconst b = 12\nconst c = 1245\n\nconst x = 123444");
-			text_1 = createText("\n    ");
+			text = createText(text_value);
+			text_1 = createText("\n      ");
 			div_1 = createElement('div');
-			text_2 = createText("0.23555");
-			li_1 = createElement('li');
-			div_2 = createElement('div');
-			text_4 = createText("Math.random()");
-			text_5 = createText("\n    ");
-			div_3 = createElement('div');
-			text_6 = createText("0.23555");
-			li_2 = createElement('li');
-			div_4 = createElement('div');
-			text_8 = createText("42");
-			text_9 = createText("\n    ");
-			div_5 = createElement('div');
-			text_10 = createText("42");
-			text_12 = createText("\n\n");
-			button = createElement('button');
-			text_13 = createText("+");
+			text_2 = createText("z");
 			this.hydrate();
 		},
 
@@ -722,49 +799,25 @@ function create_main_fragment(state, component) {
 			div.className = "input";
 			div.contentEditable = true;
 			div_1.className = "output";
-			li_1.className = "cell";
-			div_2.className = "input";
-			div_2.contentEditable = true;
-			div_3.className = "output";
-			li_2.className = "cell";
-			div_4.className = "input";
-			div_4.contentEditable = true;
-			div_5.className = "output";
-			button.name = "add";
-			button.id = "add";
 		},
 
 		mount: function mount(target, anchor) {
-			insertNode(ul, target, anchor);
-			appendNode(li, ul);
+			insertNode(li, target, anchor);
 			appendNode(div, li);
 			appendNode(text, div);
 			appendNode(text_1, li);
 			appendNode(div_1, li);
 			appendNode(text_2, div_1);
-			appendNode(li_1, ul);
-			appendNode(div_2, li_1);
-			appendNode(text_4, div_2);
-			appendNode(text_5, li_1);
-			appendNode(div_3, li_1);
-			appendNode(text_6, div_3);
-			appendNode(li_2, ul);
-			appendNode(div_4, li_2);
-			appendNode(text_8, div_4);
-			appendNode(text_9, li_2);
-			appendNode(div_5, li_2);
-			appendNode(text_10, div_5);
-			insertNode(text_12, target, anchor);
-			insertNode(button, target, anchor);
-			appendNode(text_13, button);
 		},
 
-		update: noop,
+		update: function update(changed, state, each_block_value, cell, cell_index) {
+			if (changed.cells && text_value !== (text_value = cell.code)) {
+				text.data = text_value;
+			}
+		},
 
 		unmount: function unmount() {
-			detachNode(ul);
-			detachNode(text_12);
-			detachNode(button);
+			detachNode(li);
 		},
 
 		destroy: noop
@@ -799,10 +852,15 @@ assign(App.prototype, proto);
 var render = function render(node) {
 
   var app = new App({
-    target: node
+    target: node,
+    data: { cells: [] }
   });
 
-  app.set({ name: 'everybody' });
+  app.set({
+    cells: ['const a = 123\nconst b = 12\nconst c = 1245\n\nconst x = 123444', 'z = Math.random()', '42'].map(function (code) {
+      return { code: code };
+    })
+  });
 };
 
 var s = document.currentScript;

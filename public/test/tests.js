@@ -161,6 +161,30 @@ describe('Parsing', () => {
       testParse('var a = b * c * d * e * f',
         {gives: ['a'], takes: ['b', 'c', 'd', 'e', 'f']}
       )
+    })
+
+  })
+
+  describe('last expression', () => {
+
+    it('gives an insert point', () => {
+
+      const code = `const foo = bar; bar * 200`
+
+      const result = cojs.parse(code)
+
+      expect(code.slice(result._))
+        .to.be('bar * 200')
+
+    })
+
+    it('ignores for loops', () => {
+      const code = `x = 1; 200; for(;;){}`
+
+      const result = cojs.parse(code)
+
+      expect(code.slice(result._))
+        .to.be('200; for(;;){}')
 
     })
 

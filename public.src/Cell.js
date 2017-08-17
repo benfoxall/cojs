@@ -29,10 +29,19 @@ class Cell {
     // todo gives & takes
 
     this.point = result._
-
     this.dirtyParse = false
+  }
 
+  evaluate() {
+    if(this.dirtyParse)
+      return console.error("won't evaluate: dirty parse")
 
+    const instrumented =
+      this.code.slice(0, this.point)
+       + ';const ___=' +
+      this.code.slice(this.point)
+
+    const evaluated = evaluate(instrumented, {}, ['___'], [])
   }
 
 }

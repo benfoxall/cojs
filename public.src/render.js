@@ -1,4 +1,4 @@
-import App from './App.html'
+import App from './ui/App.html'
 
 const render = node => {
 

@@ -1,0 +1,32 @@
+<ul>
+  {{#each cells as cell}}
+    <Cell cell={{cell}} on:codeupdate='update(event)'/>
+  {{/each}}
+</ul>
+
+<button name="add" id="add">+</button>
+
+
+<script>
+  import Cell from './Cell.html';
+
+  export default {
+    components: { Cell },
+
+    methods: {
+      update ({code, cell}) {
+
+        console.log("code updated", code)
+        console.log(cell)
+        cell.setCode(code)
+
+        // this would be done elsewhere
+        cell.analyse()
+        cell.evaluate()
+
+        console.log(cell.output)
+      }
+    }
+
+  }
+</script>

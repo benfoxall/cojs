@@ -1,0 +1,41 @@
+<li class="cell">
+  <div ref:editor class="input" contenteditable >{{cell.code}}</div>
+  <div ref:output class="output">{{output}}</div>
+</li>
+
+
+<script>
+export default {
+  data() {
+    return {
+      output: '-'
+    }
+  },
+
+  oncreate () {
+    const editable = this.refs.editor
+
+    const listener = (e) => {
+      this.fire('codeupdate',
+        {
+          code: editable.innerText,
+          cell: this.get('cell')
+        }
+      )
+
+    }
+
+    editable.addEventListener("DOMNodeInserted", listener, false)
+    editable.addEventListener("DOMNodeRemoved", listener, false)
+    editable.addEventListener("DOMCharacterDataModified", listener, false)
+
+    this.get('cell')
+      .addResultListener(r => {
+        console.log(r)
+        this.set('output', r)
+        this.refs.output.textContent = r
+      })
+
+  }
+}
+</script>

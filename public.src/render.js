@@ -1,4 +1,5 @@
 import App from './ui/App.html'
+import Cell from './Cell'
 
 const render = node => {
 
@@ -7,16 +8,21 @@ const render = node => {
     data: {cells: []}
   })
 
-  app.set({
-    cells: [
-      `const a = 123
+  const cells = []
+
+  window.cells = cells
+
+  cells.push(new Cell)
+  cells.push(new Cell)
+
+  cells[0].setCode(`const a = 123
 const b = 12
 const c = 1245
 
-const x = 123444`,
-      `z = Math.random()`,
-      '42'
-    ].map(code => ({code}))
+x = a + b + c`)
+
+  app.set({
+    cells: cells
   })
 
 }

@@ -1,3 +1,6 @@
+import parse from './parse'
+import evaluate from './evaluate'
+
 
 class Cell {
 
@@ -26,6 +29,8 @@ class Cell {
   analyse() {
     const result = parse(this.code)
 
+    console.log("got result, ", result)
+
     // todo gives & takes
 
     this.point = result._
@@ -41,7 +46,25 @@ class Cell {
        + ';const ___=' +
       this.code.slice(this.point)
 
-    const evaluated = evaluate(instrumented, {}, ['___'], [])
+    console.log(instrumented)
+
+    this.state = evaluate(instrumented, {}, ['___'], [])
+
+    this.result = this.state.___
+
+    console.log(this.state)
+
+    if(this.listeners) {
+      this.listeners.forEach(fn => {
+        fn(this.result)
+      })
+    }
+
+  }
+
+  addResultListener(fn) {
+    (this.listeners = this.listeners || [])
+    .push(fn)
   }
 
 }

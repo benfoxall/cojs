@@ -1,3 +1,4 @@
+// updated
 var cojs = (function (exports) {
 'use strict';
 
@@ -693,6 +694,158 @@ var proto = {
 	_set: _set
 };
 
+var template$1 = function () {
+	return {
+		data: function data() {
+			return {
+				output: '-'
+			};
+		},
+		oncreate: function oncreate() {
+			var _this = this;
+
+			var editable = this.refs.editor;
+
+			var listener = function listener(e) {
+				_this.fire('codeupdate', {
+					code: editable.innerText,
+					cell: _this.get('cell')
+				});
+			};
+
+			editable.addEventListener("DOMNodeInserted", listener, false);
+			editable.addEventListener("DOMNodeRemoved", listener, false);
+			editable.addEventListener("DOMCharacterDataModified", listener, false);
+
+			this.get('cell').addResultListener(function (r) {
+				console.log(r);
+				_this.set('output', r);
+				_this.refs.output.textContent = r;
+			});
+		}
+	};
+}();
+
+function create_main_fragment$1(state, component) {
+	var li,
+	    div,
+	    text_value = state.cell.code,
+	    text,
+	    text_1,
+	    div_1,
+	    text_2;
+
+	return {
+		create: function create() {
+			li = createElement('li');
+			div = createElement('div');
+			text = createText(text_value);
+			text_1 = createText("\n  ");
+			div_1 = createElement('div');
+			text_2 = createText(state.output);
+			this.hydrate();
+		},
+
+		hydrate: function hydrate(nodes) {
+			li.className = "cell";
+			div.className = "input";
+			div.contentEditable = true;
+			div_1.className = "output";
+		},
+
+		mount: function mount(target, anchor) {
+			insertNode(li, target, anchor);
+			appendNode(div, li);
+			component.refs.editor = div;
+			appendNode(text, div);
+			appendNode(text_1, li);
+			appendNode(div_1, li);
+			component.refs.output = div_1;
+			appendNode(text_2, div_1);
+		},
+
+		update: function update(changed, state) {
+			if (changed.cell && text_value !== (text_value = state.cell.code)) {
+				text.data = text_value;
+			}
+
+			if (changed.output) {
+				text_2.data = state.output;
+			}
+		},
+
+		unmount: function unmount() {
+			detachNode(li);
+		},
+
+		destroy: function destroy$$1() {
+			if (component.refs.editor === div) component.refs.editor = null;
+			if (component.refs.output === div_1) component.refs.output = null;
+		}
+	};
+}
+
+function Cell(options) {
+	options = options || {};
+	this.refs = {};
+	this._state = assign(template$1.data(), options.data);
+
+	this._observers = {
+		pre: Object.create(null),
+		post: Object.create(null)
+	};
+
+	this._handlers = Object.create(null);
+
+	this._root = options._root || this;
+	this._yield = options._yield;
+	this._bind = options._bind;
+
+	var oncreate = template$1.oncreate.bind(this);
+
+	if (!options._root) {
+		this._oncreate = [oncreate];
+	} else {
+		this._root._oncreate.push(oncreate);
+	}
+
+	this._fragment = create_main_fragment$1(this._state, this);
+
+	if (options.target) {
+		this._fragment.create();
+		this._fragment.mount(options.target, null);
+	}
+
+	if (!options._root) {
+		callAll(this._oncreate);
+	}
+}
+
+assign(Cell.prototype, proto);
+
+var template = function () {
+	return {
+		methods: {
+			update: function update(_ref) {
+				var code = _ref.code,
+				    cell = _ref.cell;
+
+
+				console.log("code updated", code);
+				console.log(cell);
+				cell.setCode(code);
+
+				// this would be done elsewhere
+				cell.analyse();
+				cell.evaluate();
+
+				console.log(cell.output);
+			}
+		}
+
+	};
+}();
+
 function create_main_fragment(state, component) {
 	var ul, text, button, text_1;
 
@@ -738,7 +891,7 @@ function create_main_fragment(state, component) {
 		update: function update(changed, state) {
 			var each_block_value = state.cells;
 
-			if (changed.cells) {
+			if (changed.cells || changed.event) {
 				for (var i = 0; i < each_block_value.length; i += 1) {
 					if (each_block_iterations[i]) {
 						each_block_iterations[i].update(changed, state, each_block_value, each_block_value[i], i);
@@ -775,52 +928,38 @@ function create_main_fragment(state, component) {
 }
 
 function create_each_block(state, each_block_value, cell, cell_index, component) {
-	var li,
-	    div,
-	    text_value = cell.code,
-	    text,
-	    text_1,
-	    div_1,
-	    text_2;
+
+	var cell_1 = new Cell({
+		_root: component._root,
+		data: { cell: cell }
+	});
+
+	cell_1.on('codeupdate', function (event) {
+		component.update(event);
+	});
 
 	return {
 		create: function create() {
-			li = createElement('li');
-			div = createElement('div');
-			text = createText(text_value);
-			text_1 = createText("\n      ");
-			div_1 = createElement('div');
-			text_2 = createText("z");
-			this.hydrate();
-		},
-
-		hydrate: function hydrate(nodes) {
-			li.className = "cell";
-			div.className = "input";
-			div.contentEditable = true;
-			div_1.className = "output";
+			cell_1._fragment.create();
 		},
 
 		mount: function mount(target, anchor) {
-			insertNode(li, target, anchor);
-			appendNode(div, li);
-			appendNode(text, div);
-			appendNode(text_1, li);
-			appendNode(div_1, li);
-			appendNode(text_2, div_1);
+			cell_1._fragment.mount(target, anchor);
 		},
 
 		update: function update(changed, state, each_block_value, cell, cell_index) {
-			if (changed.cells && text_value !== (text_value = cell.code)) {
-				text.data = text_value;
-			}
+			var cell_1_changes = {};
+			if (changed.cells) cell_1_changes.cell = cell;
+			cell_1._set(cell_1_changes);
 		},
 
 		unmount: function unmount() {
-			detachNode(li);
+			cell_1._fragment.unmount();
 		},
 
-		destroy: noop
+		destroy: function destroy$$1() {
+			cell_1.destroy(false);
+		}
 	};
 }
 
@@ -839,15 +978,123 @@ function App(options) {
 	this._yield = options._yield;
 	this._bind = options._bind;
 
+	if (!options._root) {
+		this._oncreate = [];
+		this._beforecreate = [];
+		this._aftercreate = [];
+	}
+
 	this._fragment = create_main_fragment(this._state, this);
 
 	if (options.target) {
 		this._fragment.create();
 		this._fragment.mount(options.target, null);
 	}
+
+	if (!options._root) {
+		this._lock = true;
+		callAll(this._beforecreate);
+		callAll(this._oncreate);
+		callAll(this._aftercreate);
+		this._lock = false;
+	}
 }
 
-assign(App.prototype, proto);
+assign(App.prototype, template.methods, proto);
+
+var classCallCheck = function (instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+};
+
+var createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
+
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
+
+var Cell$2 = function () {
+  function Cell() {
+    classCallCheck(this, Cell);
+
+    this.code = '';
+
+    this.dirtyParse = false;
+    this.dirtyEval = false;
+
+    this.gives = [];
+    this.takes = [];
+    this.point = 0;
+
+    this.result = undefined;
+    this.state = {};
+  }
+
+  createClass(Cell, [{
+    key: 'setCode',
+    value: function setCode(code) {
+      if (this.code != code) {
+        this.dirtyParse = this.dirtyEval = true;
+      }
+
+      this.code = code;
+    }
+  }, {
+    key: 'analyse',
+    value: function analyse() {
+      var result = parse(this.code);
+
+      console.log("got result, ", result);
+
+      // todo gives & takes
+
+      this.point = result._;
+      this.dirtyParse = false;
+    }
+  }, {
+    key: 'evaluate',
+    value: function evaluate$$1() {
+      var _this = this;
+
+      if (this.dirtyParse) return console.error("won't evaluate: dirty parse");
+
+      var instrumented = this.code.slice(0, this.point) + ';const ___=' + this.code.slice(this.point);
+
+      console.log(instrumented);
+
+      this.state = evaluate(instrumented, {}, ['___'], []);
+
+      this.result = this.state.___;
+
+      console.log(this.state);
+
+      if (this.listeners) {
+        this.listeners.forEach(function (fn) {
+          fn(_this.result);
+        });
+      }
+    }
+  }, {
+    key: 'addResultListener',
+    value: function addResultListener(fn) {
+      (this.listeners = this.listeners || []).push(fn);
+    }
+  }]);
+  return Cell;
+}();
 
 var render = function render(node) {
 
@@ -856,10 +1103,17 @@ var render = function render(node) {
     data: { cells: [] }
   });
 
+  var cells = [];
+
+  window.cells = cells;
+
+  cells.push(new Cell$2());
+  cells.push(new Cell$2());
+
+  cells[0].setCode('const a = 123\nconst b = 12\nconst c = 1245\n\nx = a + b + c');
+
   app.set({
-    cells: ['const a = 123\nconst b = 12\nconst c = 1245\n\nconst x = 123444', 'z = Math.random()', '42'].map(function (code) {
-      return { code: code };
-    })
+    cells: cells
   });
 };
 

@@ -1,5 +1,6 @@
 const gulp = require('gulp')
 const awspublish = require('gulp-awspublish')
+const cloudfront = require('gulp-cloudfront-invalidate-aws-publish')
 const rollup = require('rollup-stream')
 const source = require('vinyl-source-stream')
 
@@ -22,5 +23,6 @@ gulp.task('publish', () => {
 
   return gulp.src('./public/*')
     .pipe(publisher.publish({}))
+    .pipe(cloudfront({distribution: 'E3V21SQYOBFO6D', indexRootPath: true}))
     .pipe(awspublish.reporter())
 })

@@ -7,6 +7,10 @@
 # The `service` block is the name of the service
 service: cojs
 
+plugins:
+  - serverless-dynamodb-local
+  - serverless-offline
+
 # The `provider` block defines where your service will be deployed
 provider:
   name: aws

@@ -1,0 +1,29 @@
+{
+  "Table": {
+    "TableName": "serverless-rest-api-with-dynamodb-dev",
+    "KeySchema": [
+      {
+        "AttributeName": "session",
+        "KeyType": "HASH"
+      },
+      {
+        "AttributeName": "ref",
+        "KeyType": "RANGE"
+      }
+    ],
+    "AttributeDefinitions": [
+      {
+        "AttributeName": "session",
+        "AttributeType": "S"
+      },
+      {
+        "AttributeName": "ref",
+        "AttributeType": "N"
+      }
+    ],
+    "ProvisionedThroughput": {
+      "ReadCapacityUnits": 1,
+      "WriteCapacityUnits": 1
+    }
+  }
+}

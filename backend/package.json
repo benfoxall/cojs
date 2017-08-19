@@ -5,7 +5,9 @@
   "author": "Ben Foxall <benfoxall@gmail.com>",
   "license": "MIT",
   "scripts": {},
-  "dependencies": {},
+  "dependencies": {
+    "jsonwebtoken": "^7.1.9"
+  },
   "devDependencies": {
     "aws-sdk": "^2.100.0",
     "serverless-dynamodb-local": "^0.2.25",

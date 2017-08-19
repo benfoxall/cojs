@@ -2,7 +2,7 @@ const {db, generateProcessId} = require('./db')
 const jwt = require('jsonwebtoken')
 
 const Hashids = require('hashids')
-var hashids = new Hashids('', 0, 'abcdefghijklmnopqrstuvwxyz0123456789')
+var hashids = new Hashids('', 0, 'abcdefghjkmnpqrstuvwxyz23456789')
 
 const processId = generateProcessId()
 

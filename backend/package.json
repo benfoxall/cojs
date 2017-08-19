@@ -1,0 +1,14 @@
+{
+  "name": "cojs-backend",
+  "version": "1.0.0",
+  "repository": "git@github.com:benfoxall/cojs.git",
+  "author": "Ben Foxall <benfoxall@gmail.com>",
+  "license": "MIT",
+  "scripts": {},
+  "dependencies": {},
+  "devDependencies": {
+    "aws-sdk": "^2.100.0",
+    "serverless-dynamodb-local": "^0.2.25",
+    "serverless-offline": "^3.15.3"
+  }
+}

@@ -12,7 +12,8 @@ if (process.env.IS_OFFLINE) {
 
 const db = new AWS.DynamoDB.DocumentClient(options);
 
-module.exports.helloWorld = (event, context, callback) => {
+
+const generateProcessId = () => {
 
   const params = {
     TableName: process.env.DYNAMODB_TABLE,
@@ -28,21 +29,23 @@ module.exports.helloWorld = (event, context, callback) => {
     },
     UpdateExpression: 'ADD #count :number',
     ReturnValues: 'ALL_NEW',
-  };
+  }
 
-  db.update(params, (error, updated) => {
-    // handle potential errors
-    if (error) {
-      console.error(error);
-      callback(new Error('Couldn\'t create item.'));
-      return;
-    }
+  return new Promise((resolve, reject) => {
+    db.update(params, (error, updated) => {
 
-    const response = {
-      statusCode: 200,
-      body: updated.Attributes.count,
-    };
-    callback(null, response);
-  });
+      if (error) {
+        console.error(error);
+        reject(new Error('Couldn\'t create item.'));
+        return;
+      }
 
-};
+      resolve(updated.Attributes.count)
+    })
+  })
+}
+
+module.exports = {
+  db,
+  generateProcessId
+}

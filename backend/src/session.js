@@ -1,6 +1,8 @@
 const {db, generateProcessId} = require('./db')
 const jwt = require('jsonwebtoken')
 
+const Hashids = require('hashids')
+var hashids = new Hashids('', 0, 'abcdefghijklmnopqrstuvwxyz0123456789')
 
 const processId = generateProcessId()
 
@@ -13,7 +15,7 @@ module.exports.create = (event, context, callback) => {
     .then(id => {
 
       // create a session id
-      const session = [id, count++]
+      const session = hashids.encode(id, count++)
 
       // generate a token for 1 day
       const token = jwt.sign(
@@ -21,7 +23,6 @@ module.exports.create = (event, context, callback) => {
         process.env.JWT_SECRET,
         {expiresIn: '1d'}
       )
-
 
       const response = {
         statusCode: 200,

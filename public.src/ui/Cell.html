@@ -1,6 +1,6 @@
 <li class="cell">
   <div ref:editor class="input" contenteditable >{{cell.code}}</div>
-  <div ref:output class="output">{{output}}</div>
+  <div ref:output class="output">{{cell.output}}</div>
 </li>
 
 
@@ -16,10 +16,10 @@ export default {
     const editable = this.refs.editor
 
     const listener = (e) => {
-      this.fire('codeupdate',
+      this.fire('update',
         {
           code: editable.innerText,
-          cell: this.get('cell')
+          ref: this.get('cell').ref
         }
       )
 
@@ -29,12 +29,12 @@ export default {
     editable.addEventListener("DOMNodeRemoved", listener, false)
     editable.addEventListener("DOMCharacterDataModified", listener, false)
 
-    this.get('cell')
-      .addResultListener(r => {
-        console.log(r)
-        this.set('output', r)
-        this.refs.output.textContent = r
-      })
+    // this.get('cell')
+    //   .addResultListener(r => {
+    //     console.log(r)
+    //     this.set('output', r)
+    //     this.refs.output.textContent = r
+    //   })
 
   }
 }

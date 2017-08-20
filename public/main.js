@@ -566,6 +566,14 @@ function createText(data) {
 	return document.createTextNode(data);
 }
 
+function addListener(node, event, handler) {
+	node.addEventListener(event, handler, false);
+}
+
+function removeListener(node, event, handler) {
+	node.removeEventListener(event, handler, false);
+}
+
 function destroy(detach) {
 	this.destroy = this.set = this.get = noop;
 	this.fire('destroy');
@@ -706,9 +714,9 @@ var template$1 = function () {
 			var editable = this.refs.editor;
 
 			var listener = function listener(e) {
-				_this.fire('codeupdate', {
+				_this.fire('update', {
 					code: editable.innerText,
-					cell: _this.get('cell')
+					ref: _this.get('cell').ref
 				});
 			};
 
@@ -716,11 +724,12 @@ var template$1 = function () {
 			editable.addEventListener("DOMNodeRemoved", listener, false);
 			editable.addEventListener("DOMCharacterDataModified", listener, false);
 
-			this.get('cell').addResultListener(function (r) {
-				console.log(r);
-				_this.set('output', r);
-				_this.refs.output.textContent = r;
-			});
+			// this.get('cell')
+			//   .addResultListener(r => {
+			//     console.log(r)
+			//     this.set('output', r)
+			//     this.refs.output.textContent = r
+			//   })
 		}
 	};
 }();
@@ -732,6 +741,7 @@ function create_main_fragment$1(state, component) {
 	    text,
 	    text_1,
 	    div_1,
+	    text_2_value = state.cell.output,
 	    text_2;
 
 	return {
@@ -741,7 +751,7 @@ function create_main_fragment$1(state, component) {
 			text = createText(text_value);
 			text_1 = createText("\n  ");
 			div_1 = createElement('div');
-			text_2 = createText(state.output);
+			text_2 = createText(text_2_value);
 			this.hydrate();
 		},
 
@@ -768,8 +778,8 @@ function create_main_fragment$1(state, component) {
 				text.data = text_value;
 			}
 
-			if (changed.output) {
-				text_2.data = state.output;
+			if (changed.cell && text_2_value !== (text_2_value = state.cell.output)) {
+				text_2.data = text_2_value;
 			}
 		},
 
@@ -825,20 +835,23 @@ assign(Cell.prototype, proto);
 var template = function () {
 	return {
 		methods: {
-			update: function update(_ref) {
-				var code = _ref.code,
-				    cell = _ref.cell;
+			update: function update(obj) {
+				this.fire('update', obj);
 
+				console.log("code updated", obj);
+				// console.log(cell)
+				// cell.setCode(code)
+				//
+				// // this would be done elsewhere
+				// cell.analyse()
+				// cell.evaluate()
 
-				console.log("code updated", code);
-				console.log(cell);
-				cell.setCode(code);
-
-				// this would be done elsewhere
-				cell.analyse();
-				cell.evaluate();
-
-				console.log(cell.output);
+				// console.log(cell.output)
+			},
+			add: function add(e) {
+				console.log("---", e, this);
+				e.preventDefault();
+				this.fire('add');
 			}
 		}
 
@@ -854,6 +867,10 @@ function create_main_fragment(state, component) {
 
 	for (var i = 0; i < each_block_value.length; i += 1) {
 		each_block_iterations[i] = create_each_block(state, each_block_value, each_block_value[i], i, component);
+	}
+
+	function click_handler(event) {
+		component.add(event);
 	}
 
 	return {
@@ -873,6 +890,7 @@ function create_main_fragment(state, component) {
 		hydrate: function hydrate(nodes) {
 			button.name = "add";
 			button.id = "add";
+			addListener(button, 'click', click_handler);
 		},
 
 		mount: function mount(target, anchor) {
@@ -922,6 +940,8 @@ function create_main_fragment(state, component) {
 
 		destroy: function destroy$$1() {
 			destroyEach(each_block_iterations, false, 0);
+
+			removeListener(button, 'click', click_handler);
 		}
 	};
 }
@@ -933,7 +953,7 @@ function create_each_block(state, each_block_value, cell, cell_index, component)
 		data: { cell: cell }
 	});
 
-	cell_1.on('codeupdate', function (event) {
+	cell_1.on('update', function (event) {
 		component.update(event);
 	});
 
@@ -1025,101 +1045,74 @@ var createClass = function () {
   };
 }();
 
-var Cell$2 = function () {
-  function Cell() {
-    classCallCheck(this, Cell);
 
-    this.code = '';
 
-    this.dirtyParse = false;
-    this.dirtyEval = false;
 
-    this.gives = [];
-    this.takes = [];
-    this.point = 0;
 
-    this.result = undefined;
-    this.state = {};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var slicedToArray = function () {
+  function sliceIterator(arr, i) {
+    var _arr = [];
+    var _n = true;
+    var _d = false;
+    var _e = undefined;
+
+    try {
+      for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) {
+        _arr.push(_s.value);
+
+        if (i && _arr.length === i) break;
+      }
+    } catch (err) {
+      _d = true;
+      _e = err;
+    } finally {
+      try {
+        if (!_n && _i["return"]) _i["return"]();
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+
+    return _arr;
   }
 
-  createClass(Cell, [{
-    key: 'setCode',
-    value: function setCode(code) {
-      if (this.code != code) {
-        this.dirtyParse = this.dirtyEval = true;
-      }
-
-      this.code = code;
+  return function (arr, i) {
+    if (Array.isArray(arr)) {
+      return arr;
+    } else if (Symbol.iterator in Object(arr)) {
+      return sliceIterator(arr, i);
+    } else {
+      throw new TypeError("Invalid attempt to destructure non-iterable instance");
     }
-  }, {
-    key: 'analyse',
-    value: function analyse() {
-      var result = parse(this.code);
-
-      console.log("got result, ", result);
-
-      // todo gives & takes
-
-      this.point = result._;
-      this.dirtyParse = false;
-    }
-  }, {
-    key: 'evaluate',
-    value: function evaluate$$1() {
-      var _this = this;
-
-      if (this.dirtyParse) return console.error("won't evaluate: dirty parse");
-
-      var instrumented = this.code.slice(0, this.point) + ';const ___=' + this.code.slice(this.point);
-
-      console.log(instrumented);
-
-      this.state = evaluate(instrumented, {}, ['___'], []);
-
-      this.result = this.state.___;
-
-      console.log(this.state);
-
-      if (this.listeners) {
-        this.listeners.forEach(function (fn) {
-          fn(_this.result);
-        });
-      }
-    }
-  }, {
-    key: 'addResultListener',
-    value: function addResultListener(fn) {
-      (this.listeners = this.listeners || []).push(fn);
-    }
-  }]);
-  return Cell;
+  };
 }();
-
-var render = function render(node) {
-
-  var app = new App({
-    target: node,
-    data: { cells: [] }
-  });
-
-  var cells = [];
-
-  window.cells = cells;
-
-  cells.push(new Cell$2());
-  cells.push(new Cell$2());
-
-  cells[0].setCode('const a = 123\nconst b = 12\nconst c = 1245\n\nx = a + b + c');
-
-  app.set({
-    cells: cells
-  });
-};
 
 // const ENDPOINT = "https://api.cojs.co/v0"
 var ENDPOINT = 'http://localhost:3000';
 
-// Maybe "Store" might be better
+// Maybe "Connection" might be better
 
 var Session = function () {
   function Session(id) {
@@ -1130,7 +1123,7 @@ var Session = function () {
     // this.state = 'DISCONNECTED'
     this.id = id;
 
-    this.ready = Promise.resolve();
+    this.ready = Promise.resolve(id);
 
     if (!id) this.ready = this.create().then(function (_ref) {
       var session = _ref.session,
@@ -1140,6 +1133,8 @@ var Session = function () {
       _this.token = token;
 
       localStorage.setItem('auth-' + session, token);
+
+      return _this.id;
     });else {
       this.token = localStorage.getItem('auth-' + id);
       // todo - handle no token & check token
@@ -1149,12 +1144,8 @@ var Session = function () {
   createClass(Session, [{
     key: 'create',
     value: function create() {
-      return fetch(ENDPOINT + '/session', {
-        method: "POST"
-      }).then(function (res) {
+      return fetch(ENDPOINT + '/session', { method: "POST" }).then(function (res) {
         return res.json();
-      }).catch(function (res) {
-        console.log(res);
       });
     }
   }, {
@@ -1170,6 +1161,8 @@ var Session = function () {
           method: "POST",
           body: code
         });
+      }).then(function (res) {
+        return res.status == 200 ? res : res.json().then(Promise.reject.bind(Promise));
       }).then(function (res) {
         return res.json();
       });
@@ -1187,32 +1180,177 @@ var Session = function () {
 
       return fetch;
     }(function () {
-      return fetch(ENDPOINT + '/cells/' + this.id, {
-        method: "GET"
-      }).then(function (res) {
-        return res.json();
+      var _this3 = this;
+
+      return this.ready.then(function () {
+        return fetch(ENDPOINT + '/cells/' + _this3.id, {
+          method: "GET"
+        }).then(function (res) {
+          return res.json();
+        });
       });
     })
   }]);
   return Session;
 }();
 
-var s = document.currentScript;
-if (s && s.hasAttribute('data-render')) render(document.body);
+var getQueryString = function getQueryString() {
+  return (document.location.search || '').replace('?', '');
+};
 
-var session = new Session();
+var setQueryString = function setQueryString(qs) {
+  if (window.history) window.history.pushState({}, null, '/?' + qs);else document.location = '/?' + qs;
+};
 
-window.s = session;
+var remoteStore = function remoteStore() {
 
-Promise.all([session.set(3, 'hello world!!!! LAST'), session.set(0, 'hello world'), session.set(1, 'hello world!!!! NO NO NO')]).then(function () {
-  console.log("done");
+  var listeners = [];
+  var on = function on(event, fn) {
+    listeners.push([event, fn]);
+  };
+  var fire = function fire(event, payload) {
+    listeners.forEach(function (_ref) {
+      var _ref2 = slicedToArray(_ref, 2),
+          _event = _ref2[0],
+          fn = _ref2[1];
 
-  session.fetch().then(function (items) {
-    console.table(items);
+      if (_event == event) fn(payload);
+    });
+  };
+
+  var qs = getQueryString();
+  var connection = new Session(qs);
+
+  if (!qs) connection.ready.then(setQueryString);
+
+  // TODO - handle invalid tokens
+
+  connection.fetch().then(function (items) {
+    items.forEach(function (item) {
+      fire('cell', item);
+    });
   });
-});
 
-console.log(session);
+  return { on: on };
+};
+
+// import Cell from './Cell'
+var render = function render(node, state) {
+
+  var app = new App({
+    target: node,
+    data: { cells: [{
+        ref: 0,
+        code: '',
+        output: ''
+      }] }
+  });
+
+  // update the cells from the state
+  var cells = [];
+
+  state.on('cell', function (cell) {
+    cells[cell.ref] = cell;
+    app.set({ cells: cells });
+  });
+
+  // connect the state to remote
+  var store = remoteStore();
+  store.on('cell', function (cell) {
+    state.put(cell, true);
+  });
+
+  // state.on('cell', (cell) => {store.put(cell, true)})
+
+
+  app.on('add', function () {
+    state.add();
+  });
+
+  app.on('update', function (cell) {
+    state.put(cell);
+    console.log("update", cell);
+  });
+};
+
+var State = function () {
+  function State(session) {
+    classCallCheck(this, State);
+
+    this.cells = []; // ref, code, output
+
+    this.listeners = [];
+  }
+
+  createClass(State, [{
+    key: 'on',
+    value: function on(event, fn) {
+      this.listeners.push([event, fn]);
+    }
+
+    // load() {
+    //   // syncronise with remote store
+    //
+    //   const queryString = (document.location.search || '').replace('?', '')
+    //   const session = new Session(queryString)
+    //
+    //   session.ready.then(id => {
+    //     if(window.history)
+    //       window.history.pushState({}, null, '/?' + id)
+    //     else if(!queryString)
+    //       document.location = '?' + id
+    //   })
+    //
+    //   session
+    //     .fetch()
+    //     .then(d => d.forEach(({ref, code})=> this.set(ref, code, true)))
+    //
+    // }
+
+  }, {
+    key: 'set',
+    value: function set(ref, code, upstream) {
+      var _this = this;
+
+      if (this.cells[ref]) {
+        this.cells[ref].code = code;
+        this.cells[ref].output = code + 'outpu';
+      }
+
+      this.viewers.forEach(function (fn) {
+        return fn(_this.cells);
+      });
+    }
+  }, {
+    key: 'add',
+    value: function add() {
+      var _this2 = this;
+
+      this.cells.push({
+        ref: this.cells.length,
+        code: '// code',
+        output: '// output'
+      });
+      console.log(this.cells);
+
+      this.viewers.forEach(function (fn) {
+        return fn(_this2.cells);
+      });
+    }
+  }, {
+    key: 'parse',
+    value: function parse() {}
+  }, {
+    key: 'evaluate',
+    value: function evaluate() {}
+  }]);
+  return State;
+}();
+
+var s = document.currentScript;
+if (s && s.hasAttribute('data-render')) {
+  render(document.body, new State());
+}
 
 exports.evaluate = evaluate;
 exports.parse = parse;

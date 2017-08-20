@@ -2,14 +2,14 @@
 const ENDPOINT = 'http://localhost:3000'
 
 
-// Maybe "Store" might be better
+// Maybe "Connection" might be better
 class Session {
 
   constructor(id) {
     // this.state = 'DISCONNECTED'
     this.id = id
 
-    this.ready = Promise.resolve()
+    this.ready = Promise.resolve(id)
 
     if(!id)
       this.ready = this.create()
@@ -18,6 +18,8 @@ class Session {
         this.token = token
 
         localStorage.setItem(`auth-${session}`, token)
+
+        return this.id
       })
     else {
       this.token = localStorage.getItem(`auth-${id}`)
@@ -49,11 +51,12 @@ class Session {
   }
 
   fetch() {
-    return fetch(`${ENDPOINT}/cells/${this.id}`,
+    return this.ready.then(() => fetch(`${ENDPOINT}/cells/${this.id}`,
       {
         method: "GET"
       })
       .then(res => res.json())
+    )
   }
 
 }

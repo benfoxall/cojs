@@ -1,4 +1,3 @@
-// updated
 var cojs = (function (exports) {
 'use strict';
 
@@ -1117,12 +1116,112 @@ var render = function render(node) {
   });
 };
 
+// const ENDPOINT = "https://api.cojs.co/v0"
+var ENDPOINT = 'http://localhost:3000';
+
+// Maybe "Store" might be better
+
+var Session = function () {
+  function Session(id) {
+    var _this = this;
+
+    classCallCheck(this, Session);
+
+    // this.state = 'DISCONNECTED'
+    this.id = id;
+
+    this.ready = Promise.resolve();
+
+    if (!id) this.ready = this.create().then(function (_ref) {
+      var session = _ref.session,
+          token = _ref.token;
+
+      _this.id = session;
+      _this.token = token;
+
+      localStorage.setItem('auth-' + session, token);
+    });else {
+      this.token = localStorage.getItem('auth-' + id);
+      // todo - handle no token & check token
+    }
+  }
+
+  createClass(Session, [{
+    key: 'create',
+    value: function create() {
+      return fetch(ENDPOINT + '/session', {
+        method: "POST"
+      }).then(function (res) {
+        return res.json();
+      }).catch(function (res) {
+        console.log(res);
+      });
+    }
+  }, {
+    key: 'set',
+    value: function set(ref, code) {
+      var _this2 = this;
+
+      return this.ready.then(function () {
+        return fetch(ENDPOINT + '/cell', {
+          headers: {
+            'Authorization': 'Bearer ' + _this2.token
+          },
+          method: "POST",
+          body: JSON.stringify({
+            session: _this2.id,
+            ref: ref,
+            code: code
+          })
+        });
+      }).then(function (res) {
+        return res.json();
+      });
+    }
+  }, {
+    key: 'fetch',
+    value: function (_fetch) {
+      function fetch() {
+        return _fetch.apply(this, arguments);
+      }
+
+      fetch.toString = function () {
+        return _fetch.toString();
+      };
+
+      return fetch;
+    }(function () {
+      return fetch(ENDPOINT + '/cells/' + this.id, {
+        method: "GET"
+      }).then(function (res) {
+        return res.json();
+      });
+    })
+  }]);
+  return Session;
+}();
+
 var s = document.currentScript;
 if (s && s.hasAttribute('data-render')) render(document.body);
+
+var session = new Session();
+
+window.s = session;
+
+Promise.all([session.set(3, 'hello world!!!! LAST'), session.set(0, 'hello world'), session.set(1, 'hello world!!!! NO NO NO')]).then(function () {
+  console.log("done");
+
+  session.fetch().then(function (items) {
+    console.table(items);
+  });
+});
+
+console.log(session);
 
 exports.evaluate = evaluate;
 exports.parse = parse;
 exports.render = render;
+exports.Session = Session;
 
 return exports;
 

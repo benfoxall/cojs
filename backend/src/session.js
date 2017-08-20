@@ -42,22 +42,30 @@ module.exports.create = (event, context, callback) => {
 module.exports.update = (event, context, callback) => {
 
   // TODO - auth
-  const auth = event.headers.Authorization
+  const auth = event.headers.Authorization || ''
+  const [_bearer, token] = auth.split(' ')
+
+  const {session, ref} = event.pathParameters
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+
+
+    console.log('JWT', err, decoded) // bar
+  })
 
   // TODO - handle bad data & validation
-  const body = JSON.parse(event.body)
 
   const params = {
     TableName: process.env.DYNAMODB_TABLE,
     Key: {
-      session: `a-${body.session}`,
-      ref: body.ref
+      session: `a-${session}`,
+      ref: parseInt(ref, 10)
     },
     ExpressionAttributeNames: {
       '#code': 'code',
     },
     ExpressionAttributeValues: {
-      ':code': body.code,
+      ':code': event.body,
     },
     UpdateExpression: 'SET #code = :code',
     ReturnValues: 'ALL_NEW',

@@ -1163,16 +1163,12 @@ var Session = function () {
       var _this2 = this;
 
       return this.ready.then(function () {
-        return fetch(ENDPOINT + '/cell', {
+        return fetch(ENDPOINT + '/cells/' + _this2.id + '/' + ref, {
           headers: {
             'Authorization': 'Bearer ' + _this2.token
           },
           method: "POST",
-          body: JSON.stringify({
-            session: _this2.id,
-            ref: ref,
-            code: code
-          })
+          body: code
         });
       }).then(function (res) {
         return res.json();

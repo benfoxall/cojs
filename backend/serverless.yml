@@ -40,12 +40,11 @@ functions:
           method: post
           cors: true
 
-
   update:
     handler: src/session.update
     events:
       - http:
-          path: cell
+          path: cells/{session}/{ref}
           method: post
           cors: true
 

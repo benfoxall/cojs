@@ -36,17 +36,13 @@ class Session {
 
 
   set(ref, code) {
-    return this.ready.then(() => fetch(`${ENDPOINT}/cell`,
+    return this.ready.then(() => fetch(`${ENDPOINT}/cells/${this.id}/${ref}`,
       {
         headers: {
           'Authorization': `Bearer ${this.token}`
         },
         method: "POST",
-        body: JSON.stringify({
-          session: this.id,
-          ref: ref,
-          code: code
-        })
+        body: code
       })
     ).then(res => res.json())
   }

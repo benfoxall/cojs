@@ -552,18 +552,16 @@ function detachNode(node) {
 	node.parentNode.removeChild(node);
 }
 
-function destroyEach(iterations, detach, start) {
-	for (var i = start; i < iterations.length; i += 1) {
-		if (iterations[i]) iterations[i].destroy(detach);
-	}
-}
-
 function createElement(name) {
 	return document.createElement(name);
 }
 
 function createText(data) {
 	return document.createTextNode(data);
+}
+
+function createComment() {
+	return document.createComment('');
 }
 
 function addListener(node, event, handler) {
@@ -705,81 +703,92 @@ var template$1 = function () {
 	return {
 		data: function data() {
 			return {
-				output: '-'
+				code: '',
+				output: ''
 			};
 		},
 		oncreate: function oncreate() {
 			var _this = this;
 
+			this.set({ code: this.get('cell').code });
+			this.set({ output: this.get('cell').output });
+
 			var editable = this.refs.editor;
 
+			var lastValue = void 0;
 			var listener = function listener(e) {
+
+				if (lastValue == editable.value) return;
+
+				console.log("LISTNEER FIRED", e);
+
 				_this.fire('update', {
-					code: editable.innerText,
+					code: editable.value,
 					ref: _this.get('cell').ref
 				});
 			};
 
-			editable.addEventListener("DOMNodeInserted", listener, false);
-			editable.addEventListener("DOMNodeRemoved", listener, false);
-			editable.addEventListener("DOMCharacterDataModified", listener, false);
+			this.get('cell').addOutputListener(function (err, output) {
+				_this.set({
+					error: !!err,
+					output: err || output
+				});
+			});
 
-			// this.get('cell')
-			//   .addResultListener(r => {
-			//     console.log(r)
-			//     this.set('output', r)
-			//     this.refs.output.textContent = r
-			//   })
+			// editable.addEventListener("DOMNodeInserted", listener, false)
+			// editable.addEventListener("DOMNodeRemoved", listener, false)
+			// editable.addEventListener("DOMCharacterDataModified", listener, false)
+
+
+			editable.addEventListener("keydown", listener, false);
+			editable.addEventListener("keyup", listener, false);
+			editable.addEventListener("change", listener, false);
 		}
 	};
 }();
 
 function create_main_fragment$1(state, component) {
-	var li,
-	    div,
-	    text_value = state.cell.code,
-	    text,
-	    text_1,
-	    div_1,
-	    text_2_value = state.cell.output,
-	    text_2;
+	var li, textarea, text_1, div, div_style_value, text_2;
 
 	return {
 		create: function create() {
 			li = createElement('li');
+			textarea = createElement('textarea');
+			text_1 = createText("\n  \n  ");
 			div = createElement('div');
-			text = createText(text_value);
-			text_1 = createText("\n  ");
-			div_1 = createElement('div');
-			text_2 = createText(text_2_value);
+			text_2 = createText(state.output);
 			this.hydrate();
 		},
 
 		hydrate: function hydrate(nodes) {
 			li.className = "cell";
-			div.className = "input";
-			div.contentEditable = true;
-			div_1.className = "output";
+			textarea.className = "input";
+			textarea.value = state.code;
+			div.className = "output";
+			div.style.cssText = div_style_value = "color: " + (state.error ? '#c00' : '');
 		},
 
 		mount: function mount(target, anchor) {
 			insertNode(li, target, anchor);
-			appendNode(div, li);
-			component.refs.editor = div;
-			appendNode(text, div);
+			appendNode(textarea, li);
+			component.refs.editor = textarea;
 			appendNode(text_1, li);
-			appendNode(div_1, li);
-			component.refs.output = div_1;
-			appendNode(text_2, div_1);
+			appendNode(div, li);
+			component.refs.output = div;
+			appendNode(text_2, div);
 		},
 
 		update: function update(changed, state) {
-			if (changed.cell && text_value !== (text_value = state.cell.code)) {
-				text.data = text_value;
+			if (changed.code) {
+				textarea.value = state.code;
 			}
 
-			if (changed.cell && text_2_value !== (text_2_value = state.cell.output)) {
-				text_2.data = text_2_value;
+			if (changed.error && div_style_value !== (div_style_value = "color: " + (state.error ? '#c00' : ''))) {
+				div.style.cssText = div_style_value;
+			}
+
+			if (changed.output) {
+				text_2.data = state.output;
 			}
 		},
 
@@ -788,8 +797,8 @@ function create_main_fragment$1(state, component) {
 		},
 
 		destroy: function destroy$$1() {
-			if (component.refs.editor === div) component.refs.editor = null;
-			if (component.refs.output === div_1) component.refs.output = null;
+			if (component.refs.editor === textarea) component.refs.editor = null;
+			if (component.refs.output === div) component.refs.output = null;
 		}
 	};
 }
@@ -837,19 +846,8 @@ var template = function () {
 		methods: {
 			update: function update(obj) {
 				this.fire('update', obj);
-
-				console.log("code updated", obj);
-				// console.log(cell)
-				// cell.setCode(code)
-				//
-				// // this would be done elsewhere
-				// cell.analyse()
-				// cell.evaluate()
-
-				// console.log(cell.output)
 			},
 			add: function add(e) {
-				console.log("---", e, this);
 				e.preventDefault();
 				this.fire('add');
 			}
@@ -859,14 +857,31 @@ var template = function () {
 }();
 
 function create_main_fragment(state, component) {
-	var ul, text, button, text_1;
+	var ul,
+	    each_block_lookup = Object.create(null),
+	    each_block_head,
+	    each_block_last,
+	    text,
+	    button,
+	    text_1;
 
 	var each_block_value = state.cells;
 
-	var each_block_iterations = [];
-
 	for (var i = 0; i < each_block_value.length; i += 1) {
-		each_block_iterations[i] = create_each_block(state, each_block_value, each_block_value[i], i, component);
+		var key = each_block_value[i].ref;
+		var each_block_iteration = each_block_lookup[key] = create_each_block(state, each_block_value, each_block_value[i], i, component, key);
+
+		if (each_block_last) each_block_last.next = each_block_iteration;
+		each_block_iteration.last = each_block_last;
+		each_block_last = each_block_iteration;
+
+		if (i === 0) each_block_head = each_block_iteration;
+	}
+
+	function each_block_destroy(iteration) {
+		iteration.unmount();
+		iteration.destroy();
+		each_block_lookup[iteration.key] = null;
 	}
 
 	function click_handler(event) {
@@ -877,8 +892,10 @@ function create_main_fragment(state, component) {
 		create: function create() {
 			ul = createElement('ul');
 
-			for (var i = 0; i < each_block_iterations.length; i += 1) {
-				each_block_iterations[i].create();
+			var each_block_iteration = each_block_head;
+			while (each_block_iteration) {
+				each_block_iteration.create();
+				each_block_iteration = each_block_iteration.next;
 			}
 
 			text = createText("\n\n");
@@ -896,8 +913,10 @@ function create_main_fragment(state, component) {
 		mount: function mount(target, anchor) {
 			insertNode(ul, target, anchor);
 
-			for (var i = 0; i < each_block_iterations.length; i += 1) {
-				each_block_iterations[i].mount(ul, null);
+			var each_block_iteration = each_block_head;
+			while (each_block_iteration) {
+				each_block_iteration.mount(ul, null);
+				each_block_iteration = each_block_iteration.next;
 			}
 
 			insertNode(text, target, anchor);
@@ -908,45 +927,99 @@ function create_main_fragment(state, component) {
 		update: function update(changed, state) {
 			var each_block_value = state.cells;
 
-			if (changed.cells || changed.event) {
-				for (var i = 0; i < each_block_value.length; i += 1) {
-					if (each_block_iterations[i]) {
-						each_block_iterations[i].update(changed, state, each_block_value, each_block_value[i], i);
+			var each_block_expected = each_block_head;
+			var each_block_last = null;
+
+			var discard_pile = [];
+
+			for (i = 0; i < each_block_value.length; i += 1) {
+				var key = each_block_value[i].ref;
+				var each_block_iteration = each_block_lookup[key];
+
+				if (each_block_iteration) each_block_iteration.update(changed, state, each_block_value, each_block_value[i], i);
+
+				if (each_block_expected) {
+					if (key === each_block_expected.key) {
+						each_block_expected = each_block_expected.next;
 					} else {
-						each_block_iterations[i] = create_each_block(state, each_block_value, each_block_value[i], i, component);
-						each_block_iterations[i].create();
-						each_block_iterations[i].mount(ul, null);
+						if (each_block_iteration) {
+							// probably a deletion
+							while (each_block_expected && each_block_expected.key !== key) {
+								each_block_expected.discard = true;
+								discard_pile.push(each_block_expected);
+								each_block_expected = each_block_expected.next;
+							}
+
+							each_block_expected = each_block_expected && each_block_expected.next;
+							each_block_iteration.discard = false;
+							each_block_iteration.last = each_block_last;
+
+							if (!each_block_expected) each_block_iteration.mount(ul, null);
+						} else {
+							// key is being inserted
+							each_block_iteration = each_block_lookup[key] = create_each_block(state, each_block_value, each_block_value[i], i, component, key);
+							each_block_iteration.create();
+							each_block_iteration.mount(ul, each_block_expected.first);
+
+							each_block_expected.last = each_block_iteration;
+							each_block_iteration.next = each_block_expected;
+						}
+					}
+				} else {
+					// we're appending from this point forward
+					if (each_block_iteration) {
+						each_block_iteration.discard = false;
+						each_block_iteration.next = null;
+						each_block_iteration.mount(ul, null);
+					} else {
+						each_block_iteration = each_block_lookup[key] = create_each_block(state, each_block_value, each_block_value[i], i, component, key);
+						each_block_iteration.create();
+						each_block_iteration.mount(ul, null);
 					}
 				}
 
-				for (; i < each_block_iterations.length; i += 1) {
-					each_block_iterations[i].unmount();
-					each_block_iterations[i].destroy();
-				}
-				each_block_iterations.length = each_block_value.length;
+				if (each_block_last) each_block_last.next = each_block_iteration;
+				each_block_iteration.last = each_block_last;
+				each_block_last = each_block_iteration;
 			}
+
+			if (each_block_last) each_block_last.next = null;
+
+			while (each_block_expected) {
+				each_block_destroy(each_block_expected);
+				each_block_expected = each_block_expected.next;
+			}
+
+			for (i = 0; i < discard_pile.length; i += 1) {
+				var each_block_iteration = discard_pile[i];
+				if (each_block_iteration.discard) {
+					each_block_destroy(each_block_iteration);
+				}
+			}
+
+			each_block_head = each_block_lookup[each_block_value[0] && each_block_value[0].ref];
 		},
 
 		unmount: function unmount() {
 			detachNode(ul);
-
-			for (var i = 0; i < each_block_iterations.length; i += 1) {
-				each_block_iterations[i].unmount();
-			}
-
 			detachNode(text);
 			detachNode(button);
 		},
 
 		destroy: function destroy$$1() {
-			destroyEach(each_block_iterations, false, 0);
+			var each_block_iteration = each_block_head;
+			while (each_block_iteration) {
+				each_block_iteration.destroy(false);
+				each_block_iteration = each_block_iteration.next;
+			}
 
 			removeListener(button, 'click', click_handler);
 		}
 	};
 }
 
-function create_each_block(state, each_block_value, cell, cell_index, component) {
+function create_each_block(state, each_block_value, cell, cell_index, component, key) {
+	var first;
 
 	var cell_1 = new Cell({
 		_root: component._root,
@@ -958,11 +1031,22 @@ function create_each_block(state, each_block_value, cell, cell_index, component)
 	});
 
 	return {
+		key: key,
+
+		first: null,
+
 		create: function create() {
+			first = createComment();
 			cell_1._fragment.create();
+			this.hydrate();
+		},
+
+		hydrate: function hydrate(nodes) {
+			this.first = first;
 		},
 
 		mount: function mount(target, anchor) {
+			insertNode(first, target, anchor);
 			cell_1._fragment.mount(target, anchor);
 		},
 
@@ -973,6 +1057,7 @@ function create_each_block(state, each_block_value, cell, cell_index, component)
 		},
 
 		unmount: function unmount() {
+			detachNode(first);
 			cell_1._fragment.unmount();
 		},
 
@@ -1053,6 +1138,21 @@ var createClass = function () {
 
 
 
+var inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
 
 
 
@@ -1064,8 +1164,13 @@ var createClass = function () {
 
 
 
+var possibleConstructorReturn = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
 
-
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
 
 
 
@@ -1194,82 +1299,34 @@ var Session = function () {
   return Session;
 }();
 
-var getQueryString = function getQueryString() {
-  return (document.location.search || '').replace('?', '');
-};
-
-var setQueryString = function setQueryString(qs) {
-  if (window.history) window.history.pushState({}, null, '/?' + qs);else document.location = '/?' + qs;
-};
-
-var remoteStore = function remoteStore() {
-
-  var listeners = [];
-  var on = function on(event, fn) {
-    listeners.push([event, fn]);
-  };
-  var fire = function fire(event, payload) {
-    listeners.forEach(function (_ref) {
-      var _ref2 = slicedToArray(_ref, 2),
-          _event = _ref2[0],
-          fn = _ref2[1];
-
-      if (_event == event) fn(payload);
-    });
-  };
-
-  var qs = getQueryString();
-  var connection = new Session(qs);
-
-  if (!qs) connection.ready.then(setQueryString);
-
-  // TODO - handle invalid tokens
-
-  connection.fetch().then(function (items) {
-    items.forEach(function (item) {
-      fire('cell', item);
-    });
-  });
-
-  return { on: on };
-};
-
-// import Cell from './Cell'
-var render = function render(node, state) {
+var render = function render(node, controller) {
 
   var app = new App({
     target: node,
-    data: { cells: [{
-        ref: 0,
-        code: '',
-        output: ''
-      }] }
+    data: { cells: [] }
   });
 
   // update the cells from the state
-  var cells = [];
+  app.set({ cells: controller.cells });
 
-  state.on('cell', function (cell) {
-    cells[cell.ref] = cell;
+  // a new cell was added
+  controller.on('added', function (cells) {
     app.set({ cells: cells });
   });
 
   // connect the state to remote
-  var store = remoteStore();
-  store.on('cell', function (cell) {
-    state.put(cell, true);
-  });
+  // const store = remoteStore()
+  // store.on('cell', (cell) => {state.put(cell, true)})
 
   // state.on('cell', (cell) => {store.put(cell, true)})
 
 
   app.on('add', function () {
-    state.add();
+    controller.add();
   });
 
   app.on('update', function (cell) {
-    state.put(cell);
-    console.log("update", cell);
+    controller.set(cell.ref, cell.code);
   });
 };
 
@@ -1347,15 +1404,201 @@ var State = function () {
   return State;
 }();
 
+var Cell$2 = function () {
+  function Cell(options) {
+    classCallCheck(this, Cell);
+
+    this.code = '';
+    this.ref = options.ref;
+
+    this.dirtyParse = false;
+    this.dirtyEval = false;
+
+    this.gives = [];
+    this.takes = [];
+    this.point = 0;
+
+    this.output = '';
+    this.state = {};
+
+    this.parseError = null;
+  }
+
+  createClass(Cell, [{
+    key: 'setCode',
+    value: function setCode(code) {
+      if (this.code != code) {
+        this.dirtyParse = this.dirtyEval = true;
+        this.parseError = null;
+      }
+
+      this.code = code;
+    }
+  }, {
+    key: 'analyse',
+    value: function analyse() {
+      var _this = this;
+
+      try {
+        var result = parse(this.code);
+        this.point = result._;
+      } catch (e) {
+        this.parseError = e.description;
+        this.point = -1;
+
+        if (this.listeners) {
+          this.listeners.forEach(function (fn) {
+            fn(_this.parseError);
+          });
+        }
+      } finally {
+        this.dirtyParse = false;
+      }
+    }
+  }, {
+    key: 'evaluate',
+    value: function evaluate$$1() {
+      var _this2 = this;
+
+      if (this.code.trim() == '') {
+        if (this.listeners) {
+          this.listeners.forEach(function (fn) {
+            fn(null, '');
+          });
+        }
+        return;
+      }
+
+      if (this.dirtyParse) return console.error("won't evaluate: dirty parse");
+
+      if (this.parseError) return console.error("won't evaluate: parse error");
+
+      var instrumented = this.code.slice(0, this.point) + ';const ___=' + this.code.slice(this.point);
+
+      console.log(instrumented);
+
+      this.state = evaluate(instrumented, {}, ['___'], []);
+
+      this.output = this.state.___;
+
+      console.log(this.state);
+
+      if (this.listeners) {
+        this.listeners.forEach(function (fn) {
+          fn(null, _this2.output);
+        });
+      }
+    }
+  }, {
+    key: 'addOutputListener',
+    value: function addOutputListener(fn) {
+      (this.listeners = this.listeners || []).push(fn);
+    }
+  }]);
+  return Cell;
+}();
+
+var Controller = function () {
+  function Controller() {
+    classCallCheck(this, Controller);
+
+    this.cells = [new Cell$2({ ref: 0 })];
+    this.listeners = [];
+    this.handle();
+  }
+
+  createClass(Controller, [{
+    key: 'set',
+    value: function set(ref, code) {
+
+      if (!this.cells[ref]) this.cells[ref] = new Cell$2();
+
+      this.cells[ref].setCode(code);
+
+      this.handle();
+      // this.fire('change', this.cells)
+    }
+  }, {
+    key: 'add',
+    value: function add() {
+      var ref = this.cells.length;
+      this.cells = this.cells.concat(new Cell$2({ ref: ref }));
+
+      this.handle();
+      this.fire('added', this.cells);
+    }
+  }, {
+    key: 'rm',
+    value: function rm(ref) {
+      console.log("todo");
+    }
+  }, {
+    key: 'handle',
+    value: function handle() {
+      console.error('handler not implemented for ' + this);
+    }
+  }, {
+    key: 'on',
+    value: function on(event, listener) {
+      this.listeners.push([event, listener]);
+    }
+  }, {
+    key: 'fire',
+    value: function fire(event, payload) {
+      this.listeners.forEach(function (_ref) {
+        var _ref2 = slicedToArray(_ref, 2),
+            _event = _ref2[0],
+            listener = _ref2[1];
+
+        if (event === _event) {
+          listener(payload);
+        }
+      });
+    }
+  }]);
+  return Controller;
+}();
+
+// This does basic evaluation without shared state
+
+
+var BasicController = function (_Controller) {
+  inherits(BasicController, _Controller);
+
+  function BasicController() {
+    classCallCheck(this, BasicController);
+    return possibleConstructorReturn(this, (BasicController.__proto__ || Object.getPrototypeOf(BasicController)).call(this));
+  }
+
+  createClass(BasicController, [{
+    key: 'handle',
+    value: function handle() {
+      console.log("handle change", this.cells);
+
+      this.cells.forEach(function (cell) {
+        if (cell.dirtyParse) {
+          cell.analyse();
+          cell.evaluate();
+        }
+      });
+    }
+  }]);
+  return BasicController;
+}(Controller);
+
 var s = document.currentScript;
 if (s && s.hasAttribute('data-render')) {
-  render(document.body, new State());
+
+  var controller = new BasicController();
+
+  render(document.body, controller);
 }
 
 exports.evaluate = evaluate;
 exports.parse = parse;
 exports.render = render;
 exports.Session = Session;
+exports.BasicController = BasicController;
 
 return exports;
 

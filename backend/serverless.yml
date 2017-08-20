@@ -40,6 +40,23 @@ functions:
           method: post
           cors: true
 
+
+  update:
+    handler: src/session.update
+    events:
+      - http:
+          path: cell
+          method: post
+          cors: true
+
+  fetch:
+    handler: src/session.fetch
+    events:
+      - http:
+          path: cells/{session}
+          method: get
+          cors: true
+
 resources:
   Resources:
     CellsDynamoDbTable:

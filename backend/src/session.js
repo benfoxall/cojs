@@ -26,6 +26,9 @@ module.exports.create = (event, context, callback) => {
 
       const response = {
         statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin" : "*"
+        },
         body: JSON.stringify({
           session: session,
           token: token
@@ -34,4 +37,87 @@ module.exports.create = (event, context, callback) => {
       callback(null, response);
 
     })
+}
+
+module.exports.update = (event, context, callback) => {
+
+  // TODO - auth
+  const auth = event.headers.Authorization
+
+  // TODO - handle bad data & validation
+  const body = JSON.parse(event.body)
+
+  const params = {
+    TableName: process.env.DYNAMODB_TABLE,
+    Key: {
+      session: `a-${body.session}`,
+      ref: body.ref
+    },
+    ExpressionAttributeNames: {
+      '#code': 'code',
+    },
+    ExpressionAttributeValues: {
+      ':code': body.code,
+    },
+    UpdateExpression: 'SET #code = :code',
+    ReturnValues: 'ALL_NEW',
+  }
+
+  // return new Promise((resolve, reject) => {
+  db.update(params, (error, updated) => {
+
+    if (error) {
+      console.error(error);
+      callback(new Error('Couldn\'t update item.'));
+      return;
+    }
+
+    callback(null, {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin" : "*"
+      },
+      body: JSON.stringify(updated)
+    })
+  })
+
+}
+
+
+module.exports.fetch = (event, context, callback) => {
+
+  var params = {
+    TableName: process.env.DYNAMODB_TABLE,
+    KeyConditionExpression: "#session = :session",
+    ExpressionAttributeNames:{
+      "#session": "session"
+    },
+    ExpressionAttributeValues: {
+      ":session": `a-${event.pathParameters.session}`
+    }
+  }
+
+  db.query(params, function(err, data) {
+    if (err) {
+      console.error("Unable to query. Error:", JSON.stringify(err, null, 2));
+      callback(new Error("Unable to query"))
+
+    } else {
+      console.log("Query succeeded.");
+      data.Items.forEach(function(item) {
+        console.log(" -", item)
+      })
+
+
+      callback(null, {
+        statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin" : "*"
+        },
+        body: JSON.stringify(data.Items.map(({ref, code}) => ({ref, code})))
+      })
+    }
+
+  })
+
 }

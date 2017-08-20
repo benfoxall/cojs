@@ -27,11 +27,9 @@ class Session {
 
   create() {
     return fetch(`${ENDPOINT}/session`,
-      {
-        method: "POST"
-      })
-      .then(res => res.json())
-      .catch(function(res){ console.log(res) })
+      { method: "POST" }
+    )
+    .then(res => res.json())
   }
 
 
@@ -44,7 +42,10 @@ class Session {
         method: "POST",
         body: code
       })
-    ).then(res => res.json())
+    )
+    .then(res => res.status == 200 ? res : res.json().then(Promise.reject.bind(Promise)))
+    .then(res => res.json())
+
   }
 
   fetch() {

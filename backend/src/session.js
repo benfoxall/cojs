@@ -39,55 +39,81 @@ module.exports.create = (event, context, callback) => {
     })
 }
 
+
+
+const forbidden = (error, callback) => {
+  const {name, message} = error
+  callback(null, {
+    statusCode: 403,
+    headers: {
+      "Access-Control-Allow-Origin" : "*"
+    },
+    body: JSON.stringify({name, message})
+  })
+}
+
 module.exports.update = (event, context, callback) => {
 
-  // TODO - auth
   const auth = event.headers.Authorization || ''
   const [_bearer, token] = auth.split(' ')
 
   const {session, ref} = event.pathParameters
 
+
+
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
 
+    if(err)
+      forbidden(err, callback)
 
-    console.log('JWT', err, decoded) // bar
-  })
 
-  // TODO - handle bad data & validation
+    if(decoded.session != session)
+      forbidden({
+        name: 'TokenMismatchError',
+        message: `session ${decoded.session} does not match`
+      }, callback)
 
-  const params = {
-    TableName: process.env.DYNAMODB_TABLE,
-    Key: {
-      session: `a-${session}`,
-      ref: parseInt(ref, 10)
-    },
-    ExpressionAttributeNames: {
-      '#code': 'code',
-    },
-    ExpressionAttributeValues: {
-      ':code': event.body,
-    },
-    UpdateExpression: 'SET #code = :code',
-    ReturnValues: 'ALL_NEW',
-  }
 
-  // return new Promise((resolve, reject) => {
-  db.update(params, (error, updated) => {
 
-    if (error) {
-      console.error(error);
-      callback(new Error('Couldn\'t update item.'));
-      return;
+    // TODO - handle bad data & validation
+
+    const params = {
+      TableName: process.env.DYNAMODB_TABLE,
+      Key: {
+        session: `a-${session}`,
+        ref: parseInt(ref, 10)
+      },
+      ExpressionAttributeNames: {
+        '#code': 'code',
+      },
+      ExpressionAttributeValues: {
+        ':code': event.body,
+      },
+      UpdateExpression: 'SET #code = :code',
+      ReturnValues: 'ALL_NEW',
     }
 
-    callback(null, {
-      statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin" : "*"
-      },
-      body: JSON.stringify(updated)
+    // return new Promise((resolve, reject) => {
+    db.update(params, (error, updated) => {
+
+      if (error) {
+        console.error(error);
+        callback(new Error('Couldn\'t update item.'));
+        return;
+      }
+
+      callback(null, {
+        statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin" : "*"
+        },
+        body: JSON.stringify(updated)
+      })
     })
+
   })
+
+
 
 }
 

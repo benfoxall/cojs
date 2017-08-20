@@ -1,5 +1,5 @@
-const ENDPOINT = "https://api.cojs.co/v0"
-// const ENDPOINT = 'http://localhost:3000'
+// const ENDPOINT = "https://api.cojs.co/v0"
+const ENDPOINT = 'http://localhost:3000'
 
 
 // Maybe "Connection" might be better

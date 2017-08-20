@@ -26,3 +26,14 @@ gulp.task('publish', () => {
     .pipe(cloudfront({distribution: 'E3V21SQYOBFO6D', indexRootPath: true}))
     .pipe(awspublish.reporter())
 })
+
+
+gulp.task('codemirror', () => {
+
+  return gulp.src([
+    'node_modules/codemirror/lib/codemirror.js',
+    'node_modules/codemirror/lib/codemirror.css',
+    'node_modules/codemirror/mode/javascript/javascript.js'
+  ])
+  .pipe(gulp.dest('./public/'))
+})

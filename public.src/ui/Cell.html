@@ -1,6 +1,15 @@
+<style media="screen">
+.CodeMirror {
+  font-family:'Roboto Mono',monospace;
+  height: auto;
+}
+</style>
+
+
 <li class="cell">
-  <textarea class="input" ref:editor>{{code}}</textarea>
-  <!-- <div ref:editor class="input" contenteditable >{{cell.code}}</div> -->
+  <div class="input">
+    <textarea ref:editor>{{code}}</textarea>
+  </div>
   <div ref:output class="output" style="color: {{error?'#c00':''}}">{{output}}</div>
 </li>
 
@@ -22,10 +31,28 @@ export default {
 
     const editable = this.refs.editor
 
+    const cm = CodeMirror.fromTextArea(editable, {
+      viewportMargin: Infinity
+    })
+
+    cm.on('changes', (e) => {
+      const value = cm.getValue()
+      if(lastValue == value) return
+      lastValue = value
+
+      console.log("CHANGES", value)
+      this.fire('update',
+        {
+          code: value,
+          ref: this.get('cell').ref
+        }
+      )
+    })
+
     let lastValue
     const listener = (e) => {
-
       if(lastValue == editable.value) return
+      lastValue = editable.value
 
       console.log("LISTNEER FIRED", e)
 

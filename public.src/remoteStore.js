@@ -43,15 +43,9 @@ const remoteStore = () => {
   const debounces = new Map
   const put = (cell) => {
     clearTimeout(debounces.get(cell.ref))
-
     debounces.set(cell.ref, setTimeout(() => {
-      console.log("ACTUALLY PUT", cell)
-
       connection.set(cell.ref, cell.code)
-    }, 500))
-
-
-    // console.log("TODO PUT STORAGE", cell)
+    }, 1000))
   }
 
 

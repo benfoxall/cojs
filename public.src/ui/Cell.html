@@ -1,6 +1,7 @@
 <li class="cell">
-  <div ref:editor class="input" contenteditable >{{cell.code}}</div>
-  <div ref:output class="output">{{cell.output}}</div>
+  <textarea class="input" ref:editor>{{code}}</textarea>
+  <!-- <div ref:editor class="input" contenteditable >{{cell.code}}</div> -->
+  <div ref:output class="output" style="color: {{error?'#c00':''}}">{{output}}</div>
 </li>
 
 
@@ -8,33 +9,51 @@
 export default {
   data() {
     return {
-      output: '-'
+      code: '',
+      output: ''
     }
   },
 
   oncreate () {
+
+    this.set({code: this.get('cell').code})
+    this.set({output: this.get('cell').output})
+
+
     const editable = this.refs.editor
 
+    let lastValue
     const listener = (e) => {
+
+      if(lastValue == editable.value) return
+
+      console.log("LISTNEER FIRED", e)
+
       this.fire('update',
         {
-          code: editable.innerText,
+          code: editable.value,
           ref: this.get('cell').ref
         }
       )
 
     }
 
-    editable.addEventListener("DOMNodeInserted", listener, false)
-    editable.addEventListener("DOMNodeRemoved", listener, false)
-    editable.addEventListener("DOMCharacterDataModified", listener, false)
+    this.get('cell').addOutputListener((err, output) => {
+      this.set({
+        error: !!err,
+        output: err || output
+      })
 
-    // this.get('cell')
-    //   .addResultListener(r => {
-    //     console.log(r)
-    //     this.set('output', r)
-    //     this.refs.output.textContent = r
-    //   })
+    })
+
+    // editable.addEventListener("DOMNodeInserted", listener, false)
+    // editable.addEventListener("DOMNodeRemoved", listener, false)
+    // editable.addEventListener("DOMCharacterDataModified", listener, false)
+
+
+    editable.addEventListener("keydown", listener, false)
+    editable.addEventListener("keyup", listener, false)
+    editable.addEventListener("change", listener, false)
 
   }
 }

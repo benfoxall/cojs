@@ -1,11 +1,10 @@
 <ul>
-  {{#each cells as cell}}
+  {{#each cells as cell @ref}}
     <Cell cell={{cell}} on:update='update(event)'/>
   {{/each}}
 </ul>
 
 <button name="add" id="add" on:click="add(event)">+</button>
-
 
 <script>
   import Cell from './Cell.html';
@@ -16,19 +15,8 @@
     methods: {
       update (obj) {
         this.fire('update', obj)
-
-        console.log("code updated", obj)
-        // console.log(cell)
-        // cell.setCode(code)
-        //
-        // // this would be done elsewhere
-        // cell.analyse()
-        // cell.evaluate()
-
-        // console.log(cell.output)
       },
       add (e) {
-        console.log("---", e, this)
         e.preventDefault()
         this.fire('add')
       }

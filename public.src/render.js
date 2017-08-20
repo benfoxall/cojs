@@ -18,10 +18,14 @@ const render = (node, controller) => {
   })
 
   // connect the state to remote
-  // const store = remoteStore()
-  // store.on('cell', (cell) => {state.put(cell, true)})
+  const store = remoteStore()
+  store.on('cell', (cell) => {
+    controller.set(cell.ref, cell.code)
+  })
 
-  // state.on('cell', (cell) => {store.put(cell, true)})
+  controller.on('cell-updated', (cell) => {
+    store.put(cell)
+  })
 
 
   app.on('add', () => { controller.add() })

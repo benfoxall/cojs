@@ -20,6 +20,10 @@ class Cell {
     this.state = {}
 
     this.parseError = null
+
+    if(options.code) {
+      this.setCode(options.code)
+    }
   }
 
   setCode(code) {
@@ -95,6 +99,11 @@ class Cell {
     (this.listeners = this.listeners || [])
     .push(fn)
   }
+
+  // addCodeListener(fn) {
+  //   (this.code_listeners = this.code_listeners || [])
+  //   .push(fn)
+  // }
 
 }
 

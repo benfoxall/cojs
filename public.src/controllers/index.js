@@ -3,19 +3,21 @@ import Cell from '../Cell'
 class Controller {
 
   constructor() {
-    this.cells = [new Cell({ref: 0})]
+    this.cells = []
     this.listeners = []
     this.handle()
   }
 
   set(ref, code) {
 
-    if(!this.cells[ref]) this.cells[ref] = new Cell
-
-    this.cells[ref].setCode(code)
+    if(!this.cells[ref]) {
+      this.cells[ref] = new Cell({ref, code})
+      this.fire('added', this.cells)
+    }
+    else this.cells[ref].setCode(code)
 
     this.handle()
-    // this.fire('change', this.cells)
+    this.fire('cell-updated', this.cells[ref])
   }
 
   add() {

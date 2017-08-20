@@ -1214,8 +1214,9 @@ var slicedToArray = function () {
   };
 }();
 
-// const ENDPOINT = "https://api.cojs.co/v0"
-var ENDPOINT = 'http://localhost:3000';
+var ENDPOINT = "https://api.cojs.co/v0";
+// const ENDPOINT = 'http://localhost:3000'
+
 
 // Maybe "Connection" might be better
 
@@ -1237,31 +1238,31 @@ var Session = function () {
       _this.id = session;
       _this.token = token;
 
-      localStorage.setItem('auth-' + session, token);
+      localStorage.setItem("auth-" + session, token);
 
       return _this.id;
     });else {
-      this.token = localStorage.getItem('auth-' + id);
+      this.token = localStorage.getItem("auth-" + id);
       // todo - handle no token & check token
     }
   }
 
   createClass(Session, [{
-    key: 'create',
+    key: "create",
     value: function create() {
-      return fetch(ENDPOINT + '/session', { method: "POST" }).then(function (res) {
+      return fetch(ENDPOINT + "/session", { method: "POST" }).then(function (res) {
         return res.json();
       });
     }
   }, {
-    key: 'set',
+    key: "set",
     value: function set(ref, code) {
       var _this2 = this;
 
       return this.ready.then(function () {
-        return fetch(ENDPOINT + '/cells/' + _this2.id + '/' + ref, {
+        return fetch(ENDPOINT + "/cells/" + _this2.id + "/" + ref, {
           headers: {
-            'Authorization': 'Bearer ' + _this2.token
+            'Authorization': "Bearer " + _this2.token
           },
           method: "POST",
           body: code
@@ -1273,7 +1274,7 @@ var Session = function () {
       });
     }
   }, {
-    key: 'fetch',
+    key: "fetch",
     value: function (_fetch) {
       function fetch() {
         return _fetch.apply(this, arguments);
@@ -1288,7 +1289,7 @@ var Session = function () {
       var _this3 = this;
 
       return this.ready.then(function () {
-        return fetch(ENDPOINT + '/cells/' + _this3.id, {
+        return fetch(ENDPOINT + "/cells/" + _this3.id, {
           method: "GET"
         }).then(function (res) {
           return res.json();
@@ -1298,6 +1299,60 @@ var Session = function () {
   }]);
   return Session;
 }();
+
+var getQueryString = function getQueryString() {
+  return (document.location.search || '').replace('?', '');
+};
+
+var setQueryString = function setQueryString(qs) {
+  if (window.history) window.history.pushState({}, null, '/?' + qs);else document.location = '/?' + qs;
+};
+
+var remoteStore = function remoteStore() {
+
+  var listeners = [];
+  var on = function on(event, fn) {
+    listeners.push([event, fn]);
+  };
+  var fire = function fire(event, payload) {
+    listeners.forEach(function (_ref) {
+      var _ref2 = slicedToArray(_ref, 2),
+          _event = _ref2[0],
+          fn = _ref2[1];
+
+      if (_event == event) fn(payload);
+    });
+  };
+
+  var qs = getQueryString();
+  var connection = new Session(qs);
+
+  if (!qs) connection.ready.then(setQueryString);
+
+  // TODO - handle invalid tokens
+
+  connection.fetch().then(function (items) {
+    items.forEach(function (item) {
+      console.log("YES", item);
+      fire('cell', item);
+    });
+  });
+
+  var debounces = new Map();
+  var put = function put(cell) {
+    clearTimeout(debounces.get(cell.ref));
+
+    debounces.set(cell.ref, setTimeout(function () {
+      console.log("ACTUALLY PUT", cell);
+
+      connection.set(cell.ref, cell.code);
+    }, 500));
+
+    // console.log("TODO PUT STORAGE", cell)
+  };
+
+  return { on: on, put: put };
+};
 
 var render = function render(node, controller) {
 
@@ -1315,11 +1370,14 @@ var render = function render(node, controller) {
   });
 
   // connect the state to remote
-  // const store = remoteStore()
-  // store.on('cell', (cell) => {state.put(cell, true)})
+  var store = remoteStore();
+  store.on('cell', function (cell) {
+    controller.set(cell.ref, cell.code);
+  });
 
-  // state.on('cell', (cell) => {store.put(cell, true)})
-
+  controller.on('cell-updated', function (cell) {
+    store.put(cell);
+  });
 
   app.on('add', function () {
     controller.add();
@@ -1422,6 +1480,10 @@ var Cell$2 = function () {
     this.state = {};
 
     this.parseError = null;
+
+    if (options.code) {
+      this.setCode(options.code);
+    }
   }
 
   createClass(Cell, [{
@@ -1494,6 +1556,12 @@ var Cell$2 = function () {
     value: function addOutputListener(fn) {
       (this.listeners = this.listeners || []).push(fn);
     }
+
+    // addCodeListener(fn) {
+    //   (this.code_listeners = this.code_listeners || [])
+    //   .push(fn)
+    // }
+
   }]);
   return Cell;
 }();
@@ -1502,7 +1570,7 @@ var Controller = function () {
   function Controller() {
     classCallCheck(this, Controller);
 
-    this.cells = [new Cell$2({ ref: 0 })];
+    this.cells = [];
     this.listeners = [];
     this.handle();
   }
@@ -1511,12 +1579,13 @@ var Controller = function () {
     key: 'set',
     value: function set(ref, code) {
 
-      if (!this.cells[ref]) this.cells[ref] = new Cell$2();
-
-      this.cells[ref].setCode(code);
+      if (!this.cells[ref]) {
+        this.cells[ref] = new Cell$2({ ref: ref, code: code });
+        this.fire('added', this.cells);
+      } else this.cells[ref].setCode(code);
 
       this.handle();
-      // this.fire('change', this.cells)
+      this.fire('cell-updated', this.cells[ref]);
     }
   }, {
     key: 'add',

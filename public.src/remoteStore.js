@@ -35,12 +35,27 @@ const remoteStore = () => {
     .fetch()
     .then(items => {
       items.forEach(item => {
+        console.log("YES", item);
         fire('cell', item)
       })
     })
 
+  const debounces = new Map
+  const put = (cell) => {
+    clearTimeout(debounces.get(cell.ref))
 
-  return { on }
+    debounces.set(cell.ref, setTimeout(() => {
+      console.log("ACTUALLY PUT", cell)
+
+      connection.set(cell.ref, cell.code)
+    }, 500))
+
+
+    // console.log("TODO PUT STORAGE", cell)
+  }
+
+
+  return { on, put }
 
 }
 

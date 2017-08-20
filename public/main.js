@@ -572,6 +572,10 @@ function removeListener(node, event, handler) {
 	node.removeEventListener(event, handler, false);
 }
 
+function setAttribute(node, attribute, value) {
+	node.setAttribute(attribute, value);
+}
+
 function destroy(detach) {
 	this.destroy = this.set = this.get = noop;
 	this.fire('destroy');
@@ -715,10 +719,26 @@ var template$1 = function () {
 
 			var editable = this.refs.editor;
 
+			var cm = CodeMirror.fromTextArea(editable, {
+				viewportMargin: Infinity
+			});
+
+			cm.on('changes', function (e) {
+				var value = cm.getValue();
+				if (lastValue == value) return;
+				lastValue = value;
+
+				console.log("CHANGES", value);
+				_this.fire('update', {
+					code: value,
+					ref: _this.get('cell').ref
+				});
+			});
+
 			var lastValue = void 0;
 			var listener = function listener(e) {
-
 				if (lastValue == editable.value) return;
+				lastValue = editable.value;
 
 				console.log("LISTNEER FIRED", e);
 
@@ -747,35 +767,49 @@ var template$1 = function () {
 	};
 }();
 
+function encapsulateStyles(node) {
+	setAttribute(node, 'svelte-3015595594', '');
+}
+
+function add_css() {
+	var style = createElement('style');
+	style.id = 'svelte-3015595594-style';
+	style.textContent = "[svelte-3015595594].CodeMirror,[svelte-3015595594] .CodeMirror{font-family:'Roboto Mono',monospace;height:auto}";
+	appendNode(style, document.head);
+}
+
 function create_main_fragment$1(state, component) {
-	var li, textarea, text_1, div, div_style_value, text_2;
+	var li, div, textarea, text_2, div_1, div_1_style_value, text_3;
 
 	return {
 		create: function create() {
 			li = createElement('li');
-			textarea = createElement('textarea');
-			text_1 = createText("\n  \n  ");
 			div = createElement('div');
-			text_2 = createText(state.output);
+			textarea = createElement('textarea');
+			text_2 = createText("\n  ");
+			div_1 = createElement('div');
+			text_3 = createText(state.output);
 			this.hydrate();
 		},
 
 		hydrate: function hydrate(nodes) {
+			encapsulateStyles(li);
 			li.className = "cell";
-			textarea.className = "input";
+			div.className = "input";
 			textarea.value = state.code;
-			div.className = "output";
-			div.style.cssText = div_style_value = "color: " + (state.error ? '#c00' : '');
+			div_1.className = "output";
+			div_1.style.cssText = div_1_style_value = "color: " + (state.error ? '#c00' : '');
 		},
 
 		mount: function mount(target, anchor) {
 			insertNode(li, target, anchor);
-			appendNode(textarea, li);
-			component.refs.editor = textarea;
-			appendNode(text_1, li);
 			appendNode(div, li);
-			component.refs.output = div;
-			appendNode(text_2, div);
+			appendNode(textarea, div);
+			component.refs.editor = textarea;
+			appendNode(text_2, li);
+			appendNode(div_1, li);
+			component.refs.output = div_1;
+			appendNode(text_3, div_1);
 		},
 
 		update: function update(changed, state) {
@@ -783,12 +817,12 @@ function create_main_fragment$1(state, component) {
 				textarea.value = state.code;
 			}
 
-			if (changed.error && div_style_value !== (div_style_value = "color: " + (state.error ? '#c00' : ''))) {
-				div.style.cssText = div_style_value;
+			if (changed.error && div_1_style_value !== (div_1_style_value = "color: " + (state.error ? '#c00' : ''))) {
+				div_1.style.cssText = div_1_style_value;
 			}
 
 			if (changed.output) {
-				text_2.data = state.output;
+				text_3.data = state.output;
 			}
 		},
 
@@ -798,7 +832,7 @@ function create_main_fragment$1(state, component) {
 
 		destroy: function destroy$$1() {
 			if (component.refs.editor === textarea) component.refs.editor = null;
-			if (component.refs.output === div) component.refs.output = null;
+			if (component.refs.output === div_1) component.refs.output = null;
 		}
 	};
 }
@@ -818,6 +852,8 @@ function Cell(options) {
 	this._root = options._root || this;
 	this._yield = options._yield;
 	this._bind = options._bind;
+
+	if (!document.getElementById('svelte-3015595594-style')) add_css();
 
 	var oncreate = template$1.oncreate.bind(this);
 
@@ -1214,9 +1250,8 @@ var slicedToArray = function () {
   };
 }();
 
-var ENDPOINT = "https://api.cojs.co/v0";
-// const ENDPOINT = 'http://localhost:3000'
-
+// const ENDPOINT = "https://api.cojs.co/v0"
+var ENDPOINT = 'http://localhost:3000';
 
 // Maybe "Connection" might be better
 
@@ -1238,31 +1273,31 @@ var Session = function () {
       _this.id = session;
       _this.token = token;
 
-      localStorage.setItem("auth-" + session, token);
+      localStorage.setItem('auth-' + session, token);
 
       return _this.id;
     });else {
-      this.token = localStorage.getItem("auth-" + id);
+      this.token = localStorage.getItem('auth-' + id);
       // todo - handle no token & check token
     }
   }
 
   createClass(Session, [{
-    key: "create",
+    key: 'create',
     value: function create() {
-      return fetch(ENDPOINT + "/session", { method: "POST" }).then(function (res) {
+      return fetch(ENDPOINT + '/session', { method: "POST" }).then(function (res) {
         return res.json();
       });
     }
   }, {
-    key: "set",
+    key: 'set',
     value: function set(ref, code) {
       var _this2 = this;
 
       return this.ready.then(function () {
-        return fetch(ENDPOINT + "/cells/" + _this2.id + "/" + ref, {
+        return fetch(ENDPOINT + '/cells/' + _this2.id + '/' + ref, {
           headers: {
-            'Authorization': "Bearer " + _this2.token
+            'Authorization': 'Bearer ' + _this2.token
           },
           method: "POST",
           body: code
@@ -1274,7 +1309,7 @@ var Session = function () {
       });
     }
   }, {
-    key: "fetch",
+    key: 'fetch',
     value: function (_fetch) {
       function fetch() {
         return _fetch.apply(this, arguments);
@@ -1289,7 +1324,7 @@ var Session = function () {
       var _this3 = this;
 
       return this.ready.then(function () {
-        return fetch(ENDPOINT + "/cells/" + _this3.id, {
+        return fetch(ENDPOINT + '/cells/' + _this3.id, {
           method: "GET"
         }).then(function (res) {
           return res.json();
@@ -1341,14 +1376,9 @@ var remoteStore = function remoteStore() {
   var debounces = new Map();
   var put = function put(cell) {
     clearTimeout(debounces.get(cell.ref));
-
     debounces.set(cell.ref, setTimeout(function () {
-      console.log("ACTUALLY PUT", cell);
-
       connection.set(cell.ref, cell.code);
-    }, 500));
-
-    // console.log("TODO PUT STORAGE", cell)
+    }, 1000));
   };
 
   return { on: on, put: put };

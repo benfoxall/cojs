@@ -2,38 +2,32 @@ import App from './ui/App.html'
 // import Cell from './Cell'
 import remoteStore from './remoteStore'
 
-const render = (node, state) => {
+const render = (node, controller) => {
 
   const app = new App({
     target: node,
-    data: {cells: [{
-      ref: 0,
-      code: '',
-      output: ''
-    }]}
+    data: {cells: []}
   })
 
   // update the cells from the state
-  const cells = []
+  app.set({cells: controller.cells})
 
-  state.on('cell', (cell) => {
-    cells[cell.ref] = cell
-    app.set({cells})
+  // a new cell was added
+  controller.on('added', cells => {
+    app.set({cells: cells})
   })
 
-
   // connect the state to remote
-  const store = remoteStore()
-  store.on('cell', (cell) => {state.put(cell, true)})
+  // const store = remoteStore()
+  // store.on('cell', (cell) => {state.put(cell, true)})
 
   // state.on('cell', (cell) => {store.put(cell, true)})
 
 
-  app.on('add', () => { state.add() })
+  app.on('add', () => { controller.add() })
 
   app.on('update', (cell) => {
-    state.put(cell)
-    console.log("update", cell)
+    controller.set(cell.ref, cell.code)
   })
 
 

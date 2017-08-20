@@ -4,8 +4,9 @@ import evaluate from './evaluate'
 
 class Cell {
 
-  constructor() {
+  constructor(options) {
     this.code = ''
+    this.ref = options.ref
 
     this.dirtyParse = false
     this.dirtyEval = false
@@ -14,32 +15,60 @@ class Cell {
     this.takes = []
     this.point = 0
 
-    this.result = undefined
+
+    this.output = ''
     this.state = {}
+
+    this.parseError = null
   }
 
   setCode(code) {
     if(this.code != code) {
       this.dirtyParse = this.dirtyEval = true
+      this.parseError = null
     }
 
     this.code = code
   }
 
   analyse() {
-    const result = parse(this.code)
 
-    console.log("got result, ", result)
+    try {
+      const result = parse(this.code)
+      this.point = result._
+    } catch (e) {
+      this.parseError = e.description
+      this.point = -1
 
-    // todo gives & takes
+      if(this.listeners) {
+        this.listeners.forEach(fn => {
+          fn(this.parseError)
+        })
+      }
 
-    this.point = result._
-    this.dirtyParse = false
+    } finally {
+      this.dirtyParse = false
+    }
+
+
+
   }
 
   evaluate() {
+    if(this.code.trim() == ''){
+      if(this.listeners) {
+        this.listeners.forEach(fn => {
+          fn(null, '')
+        })
+      }
+      return
+    }
+
     if(this.dirtyParse)
       return console.error("won't evaluate: dirty parse")
+
+    if(this.parseError)
+      return console.error("won't evaluate: parse error")
 
     const instrumented =
       this.code.slice(0, this.point)
@@ -50,19 +79,19 @@ class Cell {
 
     this.state = evaluate(instrumented, {}, ['___'], [])
 
-    this.result = this.state.___
+    this.output = this.state.___
 
     console.log(this.state)
 
     if(this.listeners) {
       this.listeners.forEach(fn => {
-        fn(this.result)
+        fn(null, this.output)
       })
     }
 
   }
 
-  addResultListener(fn) {
+  addOutputListener(fn) {
     (this.listeners = this.listeners || [])
     .push(fn)
   }

@@ -50,6 +50,9 @@ class iframeEvaluator {
         margin:0;
         padding:0
       }
+      #output {
+        padding: 1.3em;
+      }
       </style>
       </head><body>
         <script>
@@ -72,6 +75,13 @@ class iframeEvaluator {
             type: 'height',
             value: document.body.offsetHeight,
           }, '*')
+
+          if(typeof(___) != 'undefined') {
+            const div = document.createElement('div')
+            div.id = 'output'
+            div.innerText = ___
+            document.body.appendChild(div)
+          }
 
         </script>
       </body></html>

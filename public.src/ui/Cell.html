@@ -1,7 +1,16 @@
 <style media="screen">
 .CodeMirror {
-  font-family:'Roboto Mono',monospace;
+  font-family:'Roboto Mono', monospace;
   height: auto;
+}
+.output {
+  position: relative;
+  padding: 0;
+}
+iframe {
+  width: 100%;
+  border: none;
+  margin-bottom: -4px;
 }
 </style>
 
@@ -10,7 +19,7 @@
   <div class="input">
     <textarea ref:editor>{{code}}</textarea>
   </div>
-  <div ref:output class="output" style="color: {{error?'#c00':''}}">{{output}}</div>
+  <div ref:output class="output" style="color: {{error?'#c00':''}}"></div>
 </li>
 
 
@@ -48,6 +57,10 @@ export default {
         }
       )
     })
+
+
+    this.refs.output.appendChild(this.get('cell').iframe)
+
 
     let lastValue
     const listener = (e) => {

@@ -1,5 +1,6 @@
 import parse from './parse'
 import evaluate from './evaluate'
+import iframeEvaluator from './iframeEvaluator'
 
 
 class Cell {
@@ -21,6 +22,9 @@ class Cell {
 
     this.parseError = null
 
+    this.iframe = document.createElement('iframe')
+    this.evaluator = new iframeEvaluator(this.iframe)
+
     if(options.code) {
       this.setCode(options.code)
     }
@@ -31,7 +35,6 @@ class Cell {
       this.dirtyParse = this.dirtyEval = true
       this.parseError = null
     }
-
     this.code = code
   }
 
@@ -40,6 +43,9 @@ class Cell {
     try {
       const result = parse(this.code)
       this.point = result._
+
+      this.gives = result.gives
+
     } catch (e) {
       this.parseError = e.description
       this.point = -1
@@ -53,8 +59,6 @@ class Cell {
     } finally {
       this.dirtyParse = false
     }
-
-
 
   }
 
@@ -79,19 +83,13 @@ class Cell {
        + ';const ___=' +
       this.code.slice(this.point)
 
-    console.log(instrumented)
-
-    this.state = evaluate(instrumented, {}, ['___'], [])
-
-    this.output = this.state.___
-
-    console.log(this.state)
-
-    if(this.listeners) {
-      this.listeners.forEach(fn => {
-        fn(null, this.output)
-      })
-    }
+    this.evaluator.evaluate(
+      instrumented,
+      ['___']
+    )
+    .then(res => {
+      console.log("result from iframe: ", res)
+    })
 
   }
 

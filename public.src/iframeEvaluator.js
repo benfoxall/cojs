@@ -24,7 +24,7 @@ class iframeEvaluator {
 
     if(this.id == data.frame_id) {
       if(data.type == 'height') {
-        this.iframe.style.height = `calc(${data.value}px - 2em)`
+        // this.iframe.style.height = `calc(${data.value}px - 2em)`
       }
       if(data.type == 'callback') {
         const fn = this.callbacks.get(data.callback_id)
@@ -93,6 +93,7 @@ class iframeEvaluator {
     if(this.iframe.src) URL.revokeObjectURL(this.iframe.src)
 
 
+    // this.iframe.style.height = ''
     this.iframe.src = url
 
     const response = new Promise((resolve, reject) => {

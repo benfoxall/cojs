@@ -56,6 +56,29 @@ describe('iframe evaluator', function() {
 
   })
 
+  describe('safety', () => {
+
+    it('quietly handles infinite loops', () => {
+      // thanks Remy
+
+      return evaluator.evaluate(`let a = 42;
+        while(true) {}
+        const b = 50
+        `,
+        ['a', 'b']
+      )
+      .then(result => {
+        expect(result)
+          .to.eql({
+            a: 42,
+            b: 50
+          })
+      })
+
+    })
+
+  })
+
 
 })
 

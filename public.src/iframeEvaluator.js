@@ -1,3 +1,7 @@
+import loopProtect from 'loop-protect'
+window.protect = loopProtect.protect
+
+
 let frame_id = 0
 
 
@@ -36,6 +40,8 @@ class iframeEvaluator {
 
     const callback_id = this.callback_id++
 
+    const processed = loopProtect.rewriteLoops(code)
+
     const src = `
       <html><head>
       <style>
@@ -47,7 +53,10 @@ class iframeEvaluator {
       </style>
       </head><body>
         <script>
-          ${code}
+          window.runnerWindow = window.parent
+        </script>
+        <script>
+          ${processed}
         </script>
         <script>
           window.returns = {${returns.join(', ')}}

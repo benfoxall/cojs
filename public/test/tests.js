@@ -1,3 +1,66 @@
+
+
+describe('iframe evaluator', function() {
+  this.slow(400)
+
+  const iframe = document.createElement('iframe')
+  // iframe.sandbox = ''
+  iframe.style.display = 'none'
+  document.body.appendChild(iframe)
+
+  const evaluator = new cojs.iframeEvaluator(iframe)
+
+  describe('properties', () => {
+    it('has a sandbox applied', () => {
+      expect(iframe.sandbox)
+        .to.eql({
+          '0': 'allow-scripts', '1': 'allow-same-origin'
+        })
+    })
+  })
+
+  describe('basic functions', () => {
+
+    it('works', function () {
+      return evaluator.evaluate(`
+          const x = 500
+          const y = x + 500`,
+          ['x', 'y']
+      )
+      .then(result => {
+        expect(result)
+          .to.eql({
+            x: 500,
+            y: 1000
+          })
+      })
+    })
+
+    it('handles loops', () => {
+
+      return evaluator.evaluate(`let a = 1;
+        for(i = 0; i < 10; i++) {
+          a *= 2
+        }
+        `,
+        ['a']
+      )
+      .then(result => {
+        expect(result)
+          .to.eql({
+            a: 1024
+          })
+      })
+
+    })
+
+  })
+
+
+})
+
+
+
 describe('Evaluate', () => {
 
   describe('basic assignments', () => {
@@ -66,7 +129,10 @@ describe('Evaluate', () => {
 
   describe('bugs/weirdness', () => {
 
-    it('protects loops', () => {
+    it('protects loops', function() {
+
+      this.slow(300) // it'll run for at least 100ms before giving up
+
       expect(cojs.evaluate(
         'for(a = 0; a < 10; a--) {}; b = 43',
         {},

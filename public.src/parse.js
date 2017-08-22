@@ -19,20 +19,13 @@ const parse = (code) => {
   const ast = esprima.parseScript(code, {range: true}, function (node, meta) {
     if (declaresVariable(node)) {
       gives.add(node.id.name)
+
+      if(node.init.type == 'Identifier') {
+        if(!gives.has(node.init.name))
+        takes.add(node.init.name)
+      }
     }
 
-
-    if(node.type == 'AssignmentExpression' && node.operator == '=') {
-      if(node.left.type == 'Identifier') {
-        gives.add(node.left.name)
-      }
-
-      if(node.right.type == 'Identifier') {
-        if(!gives.has(node.right.name))
-        takes.add(node.right.name)
-      }
-
-    }
 
     if(node.type == 'BinaryExpression') {
       if(node.left.type == 'Identifier') {
@@ -59,8 +52,7 @@ const parse = (code) => {
 
   })
 
-  console.log(ast)
-
+  // console.log(ast)
 
   // shallow look for where we could inject extra return
   let last_expression_index = 0

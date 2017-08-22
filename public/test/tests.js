@@ -57,7 +57,6 @@ describe('iframe evaluator', function() {
   })
 
   describe('safety', () => {
-
     it('quietly handles infinite loops', () => {
       // thanks Remy
 
@@ -74,9 +73,7 @@ describe('iframe evaluator', function() {
             b: 50
           })
       })
-
     })
-
   })
 
 
@@ -210,14 +207,27 @@ describe('Parsing', () => {
       )
     })
 
+    it('a = 0; b = 2; c = 3', () => {
+      testParse(
+        'a = 0; b = 2; c = 3',
+        {gives: [], takes: []}
+      )
+    })
+
   })
 
 
   describe('edges', () => {
 
-    it('a = b', () => {
-      testParse('a = b',
+    it('const a = b', () => {
+      testParse('const a = b',
         {gives: ['a'], takes: ['b']}
+      )
+    })
+
+    it('const a = () => {b + c * 23}', () => {
+      testParse('const a = () => {b + c * 23}',
+        {gives: ['a'], takes: ['c', 'b']}
       )
     })
 
@@ -231,7 +241,7 @@ describe('Parsing', () => {
     })
 
     it('handles objects', () => {
-      testParse('a = Math.random()',
+      testParse('const a = Math.random()',
         {gives: ['a'], takes: ['Math']}
       )
     })

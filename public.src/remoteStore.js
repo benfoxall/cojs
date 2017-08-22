@@ -35,7 +35,6 @@ const remoteStore = () => {
     .fetch()
     .then(items => {
       items.forEach(item => {
-        console.log("YES", item);
         fire('cell', item)
       })
     })

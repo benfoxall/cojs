@@ -1,4 +1,8 @@
 import loopProtect from 'loop-protect'
+
+import _debug from 'debug'
+const debug = _debug('iframe-eval')
+
 window.protect = loopProtect.protect
 
 
@@ -27,7 +31,7 @@ class iframeEvaluator {
 
         this.iframe.style.height = '1px'
 
-        console.log(this.iframe.style.height = (this.iframe.contentWindow.document.body.scrollHeight) + 'px')
+        this.iframe.style.height = (this.iframe.contentWindow.document.body.scrollHeight + 'px')
       }
       if(data.type == 'callback') {
         const fn = this.callbacks.get(data.callback_id)
@@ -71,6 +75,8 @@ class iframeEvaluator {
   }
 
   evaluate(code, returns, state = {}) {
+
+    debug(`executing: \n${code}`)
 
     const callback_id = this.callback_id++
 
@@ -142,7 +148,15 @@ class iframeEvaluator {
     this.iframe.src = url
 
     return new Promise((resolve, reject) => {
-      ready.then(() => resolve(this.iframe.contentWindow.returns)).catch(reject)
+      ready.then(
+        () => {
+          const result = this.iframe.contentWindow.returns
+          delete result.___
+          debug(`output: ${Object.keys(result)}`)
+          resolve(result)
+        }
+      ).catch(reject)
+
       error.then(reject).catch(() => {})
     })
     return response

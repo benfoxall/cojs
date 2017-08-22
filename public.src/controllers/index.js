@@ -84,8 +84,6 @@ class StateController extends Controller {
   }
 
   handle() {
-    console.log("handle change", this.cells)
-
     this.cells.forEach(cell => {
       if(cell.dirtyParse) {
         cell.analyse()
@@ -98,7 +96,6 @@ class StateController extends Controller {
               cell.gives.forEach(k => this.state[k] = undefined)
             })
         )
-
       }
     })
   }

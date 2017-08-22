@@ -51,7 +51,6 @@ export default {
       if(lastValue == value) return
       lastValue = value
 
-      console.log("CHANGES", value)
       this.fire('update',
         {
           code: value,

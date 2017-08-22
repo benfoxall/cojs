@@ -23,15 +23,17 @@ class iframeEvaluator {
     const {data} = e
 
     if(this.id == data.frame_id) {
-      if(data.type == 'height') {
-        // this.iframe.style.height = `calc(${data.value}px - 2em)`
+      if(data.type == 'resize') {
+
+        this.iframe.style.height = '1px'
+
+        console.log(this.iframe.style.height = (this.iframe.contentWindow.document.body.scrollHeight) + 'px')
       }
       if(data.type == 'callback') {
         const fn = this.callbacks.get(data.callback_id)
         if(fn){
           fn(data.value)
         }
-
       }
     }
   }
@@ -48,7 +50,6 @@ class iframeEvaluator {
       body {
         font-family:'Roboto Mono', monospace;
         margin:0;
-        padding:0
       }
       #output {
         padding: 1.3em;
@@ -70,18 +71,17 @@ class iframeEvaluator {
             type: 'callback',
           }, '*')
 
-          window.parent.postMessage({
-            frame_id: ${this.id},
-            type: 'height',
-            value: document.body.offsetHeight,
-          }, '*')
-
           if(typeof(___) != 'undefined') {
             const div = document.createElement('div')
             div.id = 'output'
             div.innerText = ___
             document.body.appendChild(div)
           }
+
+          window.parent.postMessage({
+            frame_id: ${this.id},
+            type: 'resize'
+          }, '*')
 
         </script>
       </body></html>

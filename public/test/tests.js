@@ -105,6 +105,22 @@ describe('iframe evaluator', function() {
 
   })
 
+  describe('errors', () => {
+    it('handles bad code', () => {
+      return evaluator.evaluate(`lext a = b * 2;`,
+        ['a'], {b: 42}
+      )
+      .then(e => {
+        expect("no").to.be("yes")
+      })
+      .catch(e => {
+        expect(e)
+          .to.eql('Uncaught SyntaxError: Unexpected identifier')
+      })
+
+    })
+  })
+
 
 })
 

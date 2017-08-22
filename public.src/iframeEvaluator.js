@@ -39,6 +39,37 @@ class iframeEvaluator {
     }
   }
 
+  // Hello! Welcome to this part of the code!!
+  //
+  // Yep, this is a function, that generates a function
+  // that generates a string that evaluates to a function
+  // which, when called will trigger the event handler
+  // above which will in turn resolve the promise also
+  // returned by the original function
+  //
+  // If you're interested, I will totally tell you about it
+  // over a beer/wine/cocktail (you're buying, because I
+  // just wrote this)
+  //
+  generateCallback(timeout = 1000) {
+    const callback_id = this.callback_id++
+
+    const srcGen = (value = '""') => `
+      ;window.parent.postMessage({
+        frame_id: ${this.id},
+        callback_id: ${callback_id},
+        type: 'callback',
+        value: ${value}
+      }, '*');
+    `
+    const promise = new Promise((resolve,reject) => {
+      this.callbacks.set(callback_id, resolve)
+      setTimeout(reject, timeout)
+    })
+
+    return [srcGen, promise]
+  }
+
   evaluate(code, returns, state = {}) {
 
     const callback_id = this.callback_id++
@@ -50,6 +81,10 @@ class iframeEvaluator {
     const keys = Object.keys(state)
       .filter(k => returns.indexOf(k) == -1 )
       .filter(k => k != '___')
+
+
+    const [_error, error] = this.generateCallback(500)
+    const [_ready, ready] = this.generateCallback(500)
 
     const src = `
       <html><head>
@@ -66,6 +101,10 @@ class iframeEvaluator {
         <script>
           window.runnerWindow = window.parent
 
+          window.onerror = (err) => {
+            ${_error('err')}
+          }
+
           ${keys.map(k =>
             `const ${k} = window.parent.state.${k};`
           ).join(' ')}
@@ -77,11 +116,7 @@ class iframeEvaluator {
         <script>
           window.returns = {${returns.join(', ')}}
 
-          window.parent.postMessage({
-            frame_id: ${this.id},
-            callback_id: ${callback_id},
-            type: 'callback',
-          }, '*')
+          ${_ready()}
 
           if(typeof(___) != 'undefined') {
             const div = document.createElement('div')
@@ -104,18 +139,12 @@ class iframeEvaluator {
 
     if(this.iframe.src) URL.revokeObjectURL(this.iframe.src)
 
-
-    // this.iframe.style.height = ''
     this.iframe.src = url
 
-    const response = new Promise((resolve, reject) => {
-      this.callbacks.set(callback_id, () => {
-        delete this.iframe.contentWindow.returns.___;
-
-        resolve(this.iframe.contentWindow.returns)
-      })
+    return new Promise((resolve, reject) => {
+      ready.then(() => resolve(this.iframe.contentWindow.returns)).catch(reject)
+      error.then(reject).catch(() => {})
     })
-
     return response
 
   }

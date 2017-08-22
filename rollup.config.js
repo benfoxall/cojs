@@ -9,7 +9,7 @@ export default {
   dest: 'public/main.js',
   moduleName: 'cojs',
   plugins: [
-    resolve(),
+    resolve({browser: true}),
     commonjs(),
     svelte(),
     babel({

@@ -472,15 +472,9 @@ var parse = function parse(code) {
   var ast = esprima.parseScript(code, { range: true }, function (node, meta) {
     if (declaresVariable(node)) {
       gives.add(node.id.name);
-    }
 
-    if (node.type == 'AssignmentExpression' && node.operator == '=') {
-      if (node.left.type == 'Identifier') {
-        gives.add(node.left.name);
-      }
-
-      if (node.right.type == 'Identifier') {
-        if (!gives.has(node.right.name)) takes.add(node.right.name);
+      if (node.init.type == 'Identifier') {
+        if (!gives.has(node.init.name)) takes.add(node.init.name);
       }
     }
 
@@ -506,7 +500,7 @@ var parse = function parse(code) {
     }
   });
 
-  console.log(ast);
+  // console.log(ast)
 
   // shallow look for where we could inject extra return
   var last_expression_index = 0;
@@ -1562,9 +1556,7 @@ var Cell$2 = function () {
 
       var instrumented = this.code.slice(0, this.point) + ';const ___=' + this.code.slice(this.point);
 
-      this.evaluator.evaluate(instrumented, ['___']).then(function (res) {
-        console.log("result from iframe: ", res);
-      });
+      return this.evaluator.evaluate(instrumented, ['___']);
     }
   }, {
     key: 'addOutputListener',

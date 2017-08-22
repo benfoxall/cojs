@@ -436,21 +436,20 @@ var loopProtect = (function () {
 }
 });
 
-loopProtect_1.method = '__protect';
+window.runnerWindow = loopProtect_1;
 
 var evaluate = function evaluate(code, state, gives, takes) {
-
   var processed = loopProtect_1.rewriteLoops(code);
 
   var intrumented = processed + '; return {' + gives.join(', ') + '}';
 
-  var args = takes.concat('__protect').concat(intrumented);
+  var args = takes.concat(intrumented);
 
   var fn = Function.apply(null, args);
 
   return fn.apply(null, takes.map(function (v) {
     return state[v];
-  }).concat(loopProtect_1.protect));
+  }));
 };
 
 // Depth first search
@@ -500,7 +499,7 @@ var parse = function parse(code) {
       var found = traverse([node.callee], function (n) {
         return n.object;
       }, function (n) {
-        return n.type == "Identifier";
+        return n && n.type == "Identifier";
       });
 
       if (found && !gives.has(found.name)) takes.add(found.name);
@@ -735,6 +734,8 @@ var template$1 = function () {
 				});
 			});
 
+			this.refs.output.appendChild(this.get('cell').iframe);
+
 			var lastValue = void 0;
 			var listener = function listener(e) {
 				if (lastValue == editable.value) return;
@@ -768,18 +769,18 @@ var template$1 = function () {
 }();
 
 function encapsulateStyles(node) {
-	setAttribute(node, 'svelte-3015595594', '');
+	setAttribute(node, 'svelte-3607537841', '');
 }
 
 function add_css() {
 	var style = createElement('style');
-	style.id = 'svelte-3015595594-style';
-	style.textContent = "[svelte-3015595594].CodeMirror,[svelte-3015595594] .CodeMirror{font-family:'Roboto Mono',monospace;height:auto}";
+	style.id = 'svelte-3607537841-style';
+	style.textContent = "[svelte-3607537841].CodeMirror,[svelte-3607537841] .CodeMirror{font-family:'Roboto Mono', monospace;height:auto}[svelte-3607537841].output,[svelte-3607537841] .output{position:relative;padding:0;display:flex}iframe[svelte-3607537841],[svelte-3607537841] iframe{width:100%;border:none;margin-top:auto}";
 	appendNode(style, document.head);
 }
 
 function create_main_fragment$1(state, component) {
-	var li, div, textarea, text_2, div_1, div_1_style_value, text_3;
+	var li, div, textarea, text_2, div_1, div_1_style_value;
 
 	return {
 		create: function create() {
@@ -788,7 +789,6 @@ function create_main_fragment$1(state, component) {
 			textarea = createElement('textarea');
 			text_2 = createText("\n  ");
 			div_1 = createElement('div');
-			text_3 = createText(state.output);
 			this.hydrate();
 		},
 
@@ -809,7 +809,6 @@ function create_main_fragment$1(state, component) {
 			appendNode(text_2, li);
 			appendNode(div_1, li);
 			component.refs.output = div_1;
-			appendNode(text_3, div_1);
 		},
 
 		update: function update(changed, state) {
@@ -819,10 +818,6 @@ function create_main_fragment$1(state, component) {
 
 			if (changed.error && div_1_style_value !== (div_1_style_value = "color: " + (state.error ? '#c00' : ''))) {
 				div_1.style.cssText = div_1_style_value;
-			}
-
-			if (changed.output) {
-				text_3.data = state.output;
 			}
 		},
 
@@ -853,7 +848,7 @@ function Cell(options) {
 	this._yield = options._yield;
 	this._bind = options._bind;
 
-	if (!document.getElementById('svelte-3015595594-style')) add_css();
+	if (!document.getElementById('svelte-3607537841-style')) add_css();
 
 	var oncreate = template$1.oncreate.bind(this);
 
@@ -1250,8 +1245,9 @@ var slicedToArray = function () {
   };
 }();
 
-// const ENDPOINT = "https://api.cojs.co/v0"
-var ENDPOINT = 'http://localhost:3000';
+var ENDPOINT = "https://api.cojs.co/v0";
+// const ENDPOINT = 'http://localhost:3000'
+
 
 // Maybe "Connection" might be better
 
@@ -1273,31 +1269,31 @@ var Session = function () {
       _this.id = session;
       _this.token = token;
 
-      localStorage.setItem('auth-' + session, token);
+      localStorage.setItem("auth-" + session, token);
 
       return _this.id;
     });else {
-      this.token = localStorage.getItem('auth-' + id);
+      this.token = localStorage.getItem("auth-" + id);
       // todo - handle no token & check token
     }
   }
 
   createClass(Session, [{
-    key: 'create',
+    key: "create",
     value: function create() {
-      return fetch(ENDPOINT + '/session', { method: "POST" }).then(function (res) {
+      return fetch(ENDPOINT + "/session", { method: "POST" }).then(function (res) {
         return res.json();
       });
     }
   }, {
-    key: 'set',
+    key: "set",
     value: function set(ref, code) {
       var _this2 = this;
 
       return this.ready.then(function () {
-        return fetch(ENDPOINT + '/cells/' + _this2.id + '/' + ref, {
+        return fetch(ENDPOINT + "/cells/" + _this2.id + "/" + ref, {
           headers: {
-            'Authorization': 'Bearer ' + _this2.token
+            'Authorization': "Bearer " + _this2.token
           },
           method: "POST",
           body: code
@@ -1309,7 +1305,7 @@ var Session = function () {
       });
     }
   }, {
-    key: 'fetch',
+    key: "fetch",
     value: function (_fetch) {
       function fetch() {
         return _fetch.apply(this, arguments);
@@ -1324,7 +1320,7 @@ var Session = function () {
       var _this3 = this;
 
       return this.ready.then(function () {
-        return fetch(ENDPOINT + '/cells/' + _this3.id, {
+        return fetch(ENDPOINT + "/cells/" + _this3.id, {
           method: "GET"
         }).then(function (res) {
           return res.json();
@@ -1418,78 +1414,75 @@ var render = function render(node, controller) {
   });
 };
 
-var State = function () {
-  function State(session) {
-    classCallCheck(this, State);
+window.protect = loopProtect_1.protect;
 
-    this.cells = []; // ref, code, output
+var frame_id = 0;
 
-    this.listeners = [];
+var iframeEvaluator = function () {
+  function iframeEvaluator(iframe) {
+    classCallCheck(this, iframeEvaluator);
+
+    this.iframe = iframe;
+    this.id = frame_id++;
+
+    this.callback_id = 0;
+    this.callbacks = new Map();
+
+    this.iframe.sandbox = 'allow-scripts allow-same-origin';
+
+    window.addEventListener('message', this);
   }
 
-  createClass(State, [{
-    key: 'on',
-    value: function on(event, fn) {
-      this.listeners.push([event, fn]);
-    }
+  createClass(iframeEvaluator, [{
+    key: 'handleEvent',
+    value: function handleEvent(e) {
+      var data = e.data;
 
-    // load() {
-    //   // syncronise with remote store
-    //
-    //   const queryString = (document.location.search || '').replace('?', '')
-    //   const session = new Session(queryString)
-    //
-    //   session.ready.then(id => {
-    //     if(window.history)
-    //       window.history.pushState({}, null, '/?' + id)
-    //     else if(!queryString)
-    //       document.location = '?' + id
-    //   })
-    //
-    //   session
-    //     .fetch()
-    //     .then(d => d.forEach(({ref, code})=> this.set(ref, code, true)))
-    //
-    // }
 
-  }, {
-    key: 'set',
-    value: function set(ref, code, upstream) {
-      var _this = this;
+      if (this.id == data.frame_id) {
+        if (data.type == 'resize') {
 
-      if (this.cells[ref]) {
-        this.cells[ref].code = code;
-        this.cells[ref].output = code + 'outpu';
+          this.iframe.style.height = '1px';
+
+          console.log(this.iframe.style.height = this.iframe.contentWindow.document.body.scrollHeight + 'px');
+        }
+        if (data.type == 'callback') {
+          var fn = this.callbacks.get(data.callback_id);
+          if (fn) {
+            fn(data.value);
+          }
+        }
       }
-
-      this.viewers.forEach(function (fn) {
-        return fn(_this.cells);
-      });
     }
-  }, {
-    key: 'add',
-    value: function add() {
-      var _this2 = this;
-
-      this.cells.push({
-        ref: this.cells.length,
-        code: '// code',
-        output: '// output'
-      });
-      console.log(this.cells);
-
-      this.viewers.forEach(function (fn) {
-        return fn(_this2.cells);
-      });
-    }
-  }, {
-    key: 'parse',
-    value: function parse() {}
   }, {
     key: 'evaluate',
-    value: function evaluate() {}
+    value: function evaluate(code, returns) {
+      var _this = this;
+
+      var callback_id = this.callback_id++;
+
+      var processed = loopProtect_1.rewriteLoops(code);
+
+      var src = '\n      <html><head>\n      <style>\n      body {\n        font-family:\'Roboto Mono\', monospace;\n        margin:0;\n      }\n      #output {\n        padding: 1.3em;\n      }\n      </style>\n      </head><body>\n        <script>\n          window.runnerWindow = window.parent\n        </script>\n        <script>\n          ' + processed + '\n        </script>\n        <script>\n          window.returns = {' + returns.join(', ') + '}\n\n          window.parent.postMessage({\n            frame_id: ' + this.id + ',\n            callback_id: ' + callback_id + ',\n            type: \'callback\',\n          }, \'*\')\n\n          if(typeof(___) != \'undefined\') {\n            const div = document.createElement(\'div\')\n            div.id = \'output\'\n            div.innerText = ___\n            document.body.appendChild(div)\n          }\n\n          window.parent.postMessage({\n            frame_id: ' + this.id + ',\n            type: \'resize\'\n          }, \'*\')\n\n        </script>\n      </body></html>\n    ';
+
+      var blob = new Blob([src], { type: 'text/html' });
+      var url = URL.createObjectURL(blob);
+
+      if (this.iframe.src) URL.revokeObjectURL(this.iframe.src);
+
+      // this.iframe.style.height = ''
+      this.iframe.src = url;
+
+      var response = new Promise(function (resolve, reject) {
+        _this.callbacks.set(callback_id, function () {
+          resolve(_this.iframe.contentWindow.returns);
+        });
+      });
+
+      return response;
+    }
   }]);
-  return State;
+  return iframeEvaluator;
 }();
 
 var Cell$2 = function () {
@@ -1511,6 +1504,9 @@ var Cell$2 = function () {
 
     this.parseError = null;
 
+    this.iframe = document.createElement('iframe');
+    this.evaluator = new iframeEvaluator(this.iframe);
+
     if (options.code) {
       this.setCode(options.code);
     }
@@ -1523,7 +1519,6 @@ var Cell$2 = function () {
         this.dirtyParse = this.dirtyEval = true;
         this.parseError = null;
       }
-
       this.code = code;
     }
   }, {
@@ -1534,6 +1529,8 @@ var Cell$2 = function () {
       try {
         var result = parse(this.code);
         this.point = result._;
+
+        this.gives = result.gives;
       } catch (e) {
         this.parseError = e.description;
         this.point = -1;
@@ -1550,8 +1547,6 @@ var Cell$2 = function () {
   }, {
     key: 'evaluate',
     value: function evaluate$$1() {
-      var _this2 = this;
-
       if (this.code.trim() == '') {
         if (this.listeners) {
           this.listeners.forEach(function (fn) {
@@ -1567,19 +1562,9 @@ var Cell$2 = function () {
 
       var instrumented = this.code.slice(0, this.point) + ';const ___=' + this.code.slice(this.point);
 
-      console.log(instrumented);
-
-      this.state = evaluate(instrumented, {}, ['___'], []);
-
-      this.output = this.state.___;
-
-      console.log(this.state);
-
-      if (this.listeners) {
-        this.listeners.forEach(function (fn) {
-          fn(null, _this2.output);
-        });
-      }
+      this.evaluator.evaluate(instrumented, ['___']).then(function (res) {
+        console.log("result from iframe: ", res);
+      });
     }
   }, {
     key: 'addOutputListener',
@@ -1698,6 +1683,7 @@ exports.parse = parse;
 exports.render = render;
 exports.Session = Session;
 exports.BasicController = BasicController;
+exports.iframeEvaluator = iframeEvaluator;
 
 return exports;
 

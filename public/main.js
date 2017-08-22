@@ -763,13 +763,13 @@ var template$1 = function () {
 }();
 
 function encapsulateStyles(node) {
-	setAttribute(node, 'svelte-3607537841', '');
+	setAttribute(node, 'svelte-3338289198', '');
 }
 
 function add_css() {
 	var style = createElement('style');
-	style.id = 'svelte-3607537841-style';
-	style.textContent = "[svelte-3607537841].CodeMirror,[svelte-3607537841] .CodeMirror{font-family:'Roboto Mono', monospace;height:auto}[svelte-3607537841].output,[svelte-3607537841] .output{position:relative;padding:0;display:flex}iframe[svelte-3607537841],[svelte-3607537841] iframe{width:100%;border:none;margin-top:auto}";
+	style.id = 'svelte-3338289198-style';
+	style.textContent = "[svelte-3338289198].CodeMirror,[svelte-3338289198] .CodeMirror{font-family:'Roboto Mono', monospace;height:auto}[svelte-3338289198].output,[svelte-3338289198] .output{position:relative;padding:0;display:flex}iframe[svelte-3338289198],[svelte-3338289198] iframe{width:100%;height:1em;border:none;margin-top:auto}";
 	appendNode(style, document.head);
 }
 
@@ -842,7 +842,7 @@ function Cell(options) {
 	this._yield = options._yield;
 	this._bind = options._bind;
 
-	if (!document.getElementById('svelte-3607537841-style')) add_css();
+	if (!document.getElementById('svelte-3338289198-style')) add_css();
 
 	var oncreate = template$1.oncreate.bind(this);
 

@@ -51,7 +51,7 @@ const parse = (code) => {
       const found = traverse(
         [node.callee],
         n => n.object,
-        n => n.type == "Identifier"
+        n => n && n.type == "Identifier"
       )
 
       if(found && !gives.has(found.name)) takes.add(found.name)

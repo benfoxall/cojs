@@ -91,11 +91,12 @@ class StateController extends Controller {
         cell.analyse()
         this.queue(() =>
           cell.evaluate(this.state)
-          .then(result => {
-            console.log("evaluate result", result)
-            Object.assign(this.state, result)
-            console.log("state:", this.state)
-          })
+            .then(result => {
+              Object.assign(this.state, result)
+            })
+            .catch((e) => {
+              cell.gives.forEach(k => this.state[k] = undefined)
+            })
         )
 
       }

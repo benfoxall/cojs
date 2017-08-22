@@ -68,7 +68,43 @@ class BasicController extends Controller {
   }
 }
 
+// A shared state controller
+class StateController extends Controller {
+  constructor() {
+    super()
+    this.state = {}
+
+    this.last = Promise.resolve()
+  }
+
+  queue(pgen) {
+    this.last = this.last
+      .then(() => pgen())
+      .catch(e => console.log("error in queue:", e))
+  }
+
+  handle() {
+    console.log("handle change", this.cells)
+
+    this.cells.forEach(cell => {
+      if(cell.dirtyParse) {
+        cell.analyse()
+        this.queue(() =>
+          cell.evaluate(this.state)
+          .then(result => {
+            console.log("evaluate result", result)
+            Object.assign(this.state, result)
+            console.log("state:", this.state)
+          })
+        )
+
+      }
+    })
+  }
+}
+
 
 export {
-  BasicController
+  BasicController,
+  StateController
 }

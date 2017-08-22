@@ -33,16 +33,23 @@ class iframeEvaluator {
         const fn = this.callbacks.get(data.callback_id)
         if(fn){
           fn(data.value)
+          this.callbacks.delete(data.callback_id)
         }
       }
     }
   }
 
-  evaluate(code, returns) {
+  evaluate(code, returns, state = {}) {
 
     const callback_id = this.callback_id++
 
     const processed = loopProtect.rewriteLoops(code)
+
+    window.state = state
+
+    const keys = Object.keys(state)
+      .filter(k => returns.indexOf(k) == -1 )
+      .filter(k => k != '___')
 
     const src = `
       <html><head>
@@ -58,6 +65,11 @@ class iframeEvaluator {
       </head><body>
         <script>
           window.runnerWindow = window.parent
+
+          ${keys.map(k =>
+            `const ${k} = window.parent.state.${k};`
+          ).join(' ')}
+
         </script>
         <script>
           ${processed}
@@ -98,6 +110,8 @@ class iframeEvaluator {
 
     const response = new Promise((resolve, reject) => {
       this.callbacks.set(callback_id, () => {
+        delete this.iframe.contentWindow.returns.___;
+
         resolve(this.iframe.contentWindow.returns)
       })
     })

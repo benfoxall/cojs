@@ -76,6 +76,35 @@ describe('iframe evaluator', function() {
     })
   })
 
+  describe('state', () => {
+
+    it('handles state', () => {
+      return evaluator.evaluate(`let a = b * 2;`,
+        ['a'], {b: 42}
+      )
+      .then(result => {
+        expect(result)
+          .to.eql({
+            a: 84
+          })
+      })
+    })
+
+    it('overwrites state', () => {
+      return evaluator.evaluate(`let a = 5;`,
+        ['a'], {b: 42, a: 122222}
+      )
+      .then(result => {
+        expect(result)
+          .to.eql({
+            a: 5
+          })
+      })
+
+    })
+
+  })
+
 
 })
 

@@ -62,7 +62,8 @@ class Cell {
 
   }
 
-  evaluate() {
+  evaluate(state) {
+
     if(this.code.trim() == ''){
       if(this.listeners) {
         this.listeners.forEach(fn => {
@@ -85,7 +86,8 @@ class Cell {
 
     return this.evaluator.evaluate(
       instrumented,
-      ['___']
+      ['___'].concat(this.gives),
+      state
     )
 
   }

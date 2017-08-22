@@ -83,13 +83,10 @@ class Cell {
        + ';const ___=' +
       this.code.slice(this.point)
 
-    this.evaluator.evaluate(
+    return this.evaluator.evaluate(
       instrumented,
       ['___']
     )
-    .then(res => {
-      console.log("result from iframe: ", res)
-    })
 
   }
 

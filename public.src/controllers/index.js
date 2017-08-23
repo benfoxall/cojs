@@ -1,4 +1,11 @@
 import Cell from '../Cell'
+import throttle from 'lodash.throttle'
+
+import _debug from 'debug'
+const debug = _debug('contoller')
+
+// import {throttle} from 'lodash-es' (takes over a second!!)
+
 
 class Controller {
 
@@ -101,8 +108,58 @@ class StateController extends Controller {
   }
 }
 
+// run through the full list of cells
+class SequenceController extends Controller {
+  constructor() {
+    super()
+    this.state = {}
+
+    this.last = Promise.resolve()
+
+    this.handle = throttle(this.handle.bind(this), 600)
+  }
+
+  handle() {
+    debug("handle")
+
+    const any_dirty = !this.cells.every(cell =>
+      !cell.dirtyParse
+    )
+
+    if(any_dirty) {
+      // pass the state through the chain
+      let state = Promise.resolve({})
+
+      this.cells.forEach(cell => {
+
+        if(cell.dirtyParse) cell.analyse()
+
+        state = state.then((state) =>
+          cell.evaluate(state)
+            .then(result =>
+              Object.assign({}, state, result)
+            )
+            .catch((e) => {
+              const blank = cell.gives.reduce((memo, k) => {
+                memo[k] = undefined
+                return memo
+              }, {})
+              
+              return Object.assign({}, state, blank)
+            })
+        )
+      })
+
+    }
+  }
+}
+
+
+
+
 
 export {
   BasicController,
-  StateController
+  StateController,
+  SequenceController
 }

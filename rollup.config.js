@@ -18,6 +18,7 @@ export default {
   ],
   format: 'iife',
   globals: {
-    'esprima': 'esprima'
+    'esprima': 'esprima',
+    'recast': 'recast'
   }
 }

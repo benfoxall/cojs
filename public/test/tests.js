@@ -292,7 +292,7 @@ describe('Parsing', () => {
     })
   })
 
-  describe('basic takes', () => {
+  describe('takes', () => {
 
     it('var a = b * 2', () => {
       testParse('var a = b * 2',
@@ -306,6 +306,14 @@ describe('Parsing', () => {
         {gives: ['a'], takes: ['b', 'c', 'd', 'e', 'f']}
       )
     })
+
+    it('cont el = {}; el.x = a', () => {
+      testParse('const el = {}; el.x = a',
+        {gives: ['el'], takes: ['a']}
+      )
+    })
+
+
 
   })
 

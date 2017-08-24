@@ -7,14 +7,15 @@ import {
   BasicController,
   StateController,
   SequenceController,
-  SequenceCacheController
+  SequenceCacheController,
+  GraphController
 } from './controllers'
 
 
 const s = document.currentScript
 if(s && s.hasAttribute('data-render')) {
 
-  const controller = new SequenceCacheController
+  const controller = new GraphController
 
   render(document.body, controller)
 }

@@ -217,9 +217,120 @@ class SequenceCacheController extends Controller {
 
 
 
+
+class GraphController extends Controller {
+  constructor() {
+    super()
+    this.handle = throttle(this.handle.bind(this), 10)
+    this.resultCache = new Map
+  }
+
+  handle() {
+    debug(`handle ${this.cells.length}`)
+
+    // pre-evaluate all cells
+    this.cells.forEach(cell => {
+      if(cell.dirtyParse) cell.analyse()
+    })
+
+    // construct a call graph
+    const edges = []
+
+    this.cells.forEach(a => {
+      this.cells.forEach(b => {
+        if(a === b) return
+
+        const connected = !a.gives.every(g =>
+          !b.takes.includes(g)
+        )
+
+        if(connected)
+          edges.push([a, b])
+      })
+    })
+
+    debug(`edges`, edges)
+
+
+    // invalidate forward
+    const invalidations = this.cells.filter(cell => cell.dirtyEval)
+
+    const expand = cell =>
+      edges
+        .filter(([from]) => from === cell)
+        .map(([from, to]) => to)
+
+
+    for(let i = 0; i < invalidations.length; i++) {
+      const cell = invalidations[i]
+      expand(cell)
+        .forEach(expansion => {
+          if(invalidations.indexOf(expansion) === -1) {
+            invalidations.push(expansion)
+            debug("invalidation expansion", expansion.ref)
+          }
+        })
+
+    }
+    //
+    // invalidations.forEach(cell => {
+    //   expand(cell)
+    //     .forEach(expansion => {
+    //       if(invalidations.indexOf(expansion) === -1) {
+    //         invalidations.push(expansion)
+    //         debug("invalidation expansion", expansion.ref)
+    //       }
+    //     })
+    // })
+
+    console.log(invalidations.map(c => c.ref))
+
+
+    if(this.chain) {
+      debug("cancelling previous chain")
+      this.chain.cancel()
+    }
+    this.chain = new CancelablePromiseChain({})
+
+    this.cells.forEach(cell => {
+
+      if(invalidations.indexOf(cell) === -1 &&
+         this.resultCache.has(cell)
+      ) {
+         debug("skip", this.resultCache.get(cell))
+         this.chain.add((s) =>
+           Object.assign({}, s, this.resultCache.get(cell))
+         )
+         return
+      }
+
+      this.chain.add((state) => {
+        return cell.evaluate(state)
+          .catch((e) => {
+            return cell.gives.reduce((memo, k) => {
+              memo[k] = undefined
+              return memo
+            }, {})
+          })
+          .then(result => {
+            this.resultCache.set(cell, result)
+            return Object.assign({}, state, result)
+          })
+      })
+
+    })
+
+
+
+  }
+}
+
+
+
 export {
   BasicController,
   StateController,
   SequenceController,
-  SequenceCacheController
+  SequenceCacheController,
+  GraphController
 }

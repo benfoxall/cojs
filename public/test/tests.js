@@ -371,9 +371,9 @@ describe('Parsing', () => {
 
 
 
-describe('Recasting', () => {
+describe('Recast Parsing', () => {
 
-  xit('replises stuff', () => {
+  it('wraps numbers', () => {
 
     const modified = cojs.parseRecast(`12`)
 
@@ -382,7 +382,7 @@ describe('Recasting', () => {
 
   })
 
-  xit('replises stuff', () => {
+  it('wraps declarations', () => {
 
     const modified = cojs.parseRecast(`const a = 12`)
 
@@ -392,19 +392,39 @@ describe('Recasting', () => {
   })
 
 
+  const testcase = (code, expected) => {
+    const modified = cojs.parseRecast(code)
 
-  it('replises stuff', () => {
+    const fn = new Function('__VALUE', `
+      const __R = v => __VALUE = v;
+      (() => {
+        ${modified.code}
+      })()
+      return __VALUE
+    `)
 
-    const modified = cojs.parseRecast(`
-const a = 12
+    expect(fn())
+      .to.be(expected)
+  }
 
-const f = a + 1234 + (() => 4)()
+  it('returns the last thing', () => {
+    testcase(`
+      const a = 12
+      const b = 40
+      a + b`, 52)
+  })
 
-document.createElement('foo')
-`)
+  it('handles complex stuff', () => {
+    testcase(`
+      const a = {
+        b: {
+          c: function() {
+            return 5 * 10
+          }
+        }
+      }
+      const b = 40
 
-    expect(modified.code)
-      .to.be(`const a = __R(12)`)
-
+      a.b.c()`, 50)
   })
 })

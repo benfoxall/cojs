@@ -342,4 +342,29 @@ describe('Parsing', () => {
 
   })
 
+  describe('repl insersion', () => {
+    const it_repls = (input, output) => {
+      it(`${input} ⇒ ${output}`, () => {
+
+        const result = cojs.parse(input)
+        const range = result.repl
+        const t = input.slice(range[0], range[1])
+        expect(t)
+          .to.be(output)
+
+      })
+    }
+
+    const xit_repls = (input, output) => xit(`${input} ⇒ ${output}`)
+
+
+    it_repls('"Hello world"', '"Hello world"')
+    it_repls('12', '12')
+
+    xit_repls('var i = 0', '0')
+    xit_repls(`const j; var i = 0`, '0')
+
+
+  })
+
 })

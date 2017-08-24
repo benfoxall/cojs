@@ -63,12 +63,14 @@ const parse = (code) => {
     }
   })
 
-
+  // TODO
+  const replRange = ast.range
 
   return {
     gives: Array.from(gives),
     takes: Array.from(takes),
     '_': last_expression_index,
+    'repl': replRange
   }
 
 }

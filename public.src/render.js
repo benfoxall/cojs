@@ -20,12 +20,15 @@ const render = (node, controller) => {
   // connect the state to remote
   const store = remoteStore()
   store.on('cell', (cell) => {
-    controller.set(cell.ref, cell.code)
+    controller.set(cell.ref, cell.code, true)
   })
 
-  controller.on('cell-updated', (cell) => {
-    store.put(cell)
+  controller.on('cell-updated', (cell, upstream, ok) => {
+    if(!upstream)
+      store.put(cell)
   })
+
+  // TODO - handle access/forking
 
 
   app.on('add', () => { controller.add() })

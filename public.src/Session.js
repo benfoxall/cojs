@@ -6,7 +6,9 @@ const ENDPOINT = "https://api.cojs.co/v0"
 class Session {
 
   constructor(id) {
-    // this.state = 'DISCONNECTED'
+    // DISCONNECTED | DENIED | CONNECTED
+    this.state = 'DISCONNECTED'
+
     this.id = id
 
     this.ready = Promise.resolve(id)
@@ -18,6 +20,8 @@ class Session {
         this.token = token
 
         localStorage.setItem(`auth-${session}`, token)
+
+        this.state = 'CONNECTED'
 
         return this.id
       })

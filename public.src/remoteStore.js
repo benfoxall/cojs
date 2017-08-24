@@ -29,8 +29,6 @@ const remoteStore = () => {
 
   if(!qs) connection.ready.then(setQueryString)
 
-  // TODO - handle invalid tokens
-
   connection
     .fetch()
     .then(items => {
@@ -39,6 +37,7 @@ const remoteStore = () => {
       })
     })
 
+  // TODO - handle invalid tokens
   const debounces = new Map
   const put = (cell) => {
     clearTimeout(debounces.get(cell.ref))

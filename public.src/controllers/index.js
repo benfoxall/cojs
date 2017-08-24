@@ -16,7 +16,7 @@ class Controller {
     this.handle()
   }
 
-  set(ref, code) {
+  set(ref, code, upstream) {
 
     if(!this.cells[ref]) {
       this.cells[ref] = new Cell({ref, code})
@@ -25,7 +25,7 @@ class Controller {
     else this.cells[ref].setCode(code)
 
     this.handle()
-    this.fire('cell-updated', this.cells[ref])
+    this.fire('cell-updated', this.cells[ref], upstream)
   }
 
   add() {
@@ -47,10 +47,10 @@ class Controller {
   on(event, listener) {
     this.listeners.push([event, listener])
   }
-  fire(event, payload) {
+  fire(event, ...payload) {
     this.listeners.forEach(([_event, listener]) => {
       if(event === _event) {
-        listener(payload)
+        listener.apply(listener, payload)
       }
     })
   }

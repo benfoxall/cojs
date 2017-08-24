@@ -1,9 +1,8 @@
 import loopProtect from 'loop-protect'
+window.protect = loopProtect.protect
 
 import _debug from 'debug'
 const debug = _debug('iframe-eval')
-
-window.protect = loopProtect.protect
 
 
 let frame_id = 0

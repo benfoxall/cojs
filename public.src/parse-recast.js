@@ -6,6 +6,13 @@ const b = types.builders
 import _debug from 'debug'
 const debug = _debug('parse:recast')
 
+const traverse = (rest, expand, check) => {
+  const node = rest.pop()
+  if(check(node)) return node
+  const next = [].concat(expand(node)).concat(rest)
+  return traverse(next, expand, check)
+}
+
 
 const parse = (code) => {
 
@@ -14,16 +21,76 @@ const parse = (code) => {
   const ast = recast.parse(code)
 
   const gives = new Set
+  const takes = new Set
 
+
+  // ANALYSE THE AST, PULLING OUT GIVES/TAKES
   types.visit(ast, {
-
     visitVariableDeclaration: function(path) {
 
       path.node.declarations.forEach((d, i) => {
-
-        // stash the variable name
         gives.add(d.id.name)
 
+        const node = d
+        if(node.init.type == 'Identifier') {
+          if(!gives.has(node.init.name))
+          takes.add(node.init.name)
+        }
+      })
+
+      this.traverse(path)
+    },
+
+    visitBinaryExpression: function(path) {
+      const node = path.node
+
+      if(node.left.type == 'Identifier') {
+        if(!gives.has(node.left.name))
+        takes.add(node.left.name)
+      }
+
+      if(node.right.type == 'Identifier') {
+        if(!gives.has(node.right.name))
+        takes.add(node.right.name)
+      }
+
+      this.traverse(path)
+    },
+
+    visitExpressionStatement: function(path) {
+      const node = path.node.expression
+      if(node.right && node.right.type == 'Identifier') {
+        if(!gives.has(node.right.name))
+        takes.add(node.right.name)
+      }
+
+      this.traverse(path)
+    },
+
+    visitCallExpression: function(path) {
+      const node = path.node
+
+      const found = traverse(
+        [node.callee],
+        n => n.object,
+        n => n && n.type == "Identifier"
+      )
+
+      if(found && !gives.has(found.name)) takes.add(found.name)
+
+      this.traverse(path)
+    }
+  })
+
+
+
+  // WRAP EVERYING IN __R for repl
+  types.visit(ast, {
+
+    // Inserting REPL calls
+    visitVariableDeclaration: function(path) {
+
+      path.node.declarations.forEach((d, i) => {
         const wrap = b.callExpression(
             b.identifier("__R"),
             [d.init]
@@ -33,6 +100,9 @@ const parse = (code) => {
           .get('init')
           .replace(wrap)
 
+
+        // also stash the variable name
+        gives.add(d.id.name)
       })
 
       this.traverse(path)
@@ -45,18 +115,17 @@ const parse = (code) => {
         )
       path.get('expression').replace(wrap)
       this.traverse(path)
-    }
+    },
 
   })
-
 
   const out = recast.print(ast).code;
 
   debug("GIVES:", gives)
 
   return {
-    gives: gives,
-    takes: [],
+    gives: Array.from(gives),
+    takes: Array.from(takes),
     code: out
   }
 }

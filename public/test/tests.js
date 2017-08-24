@@ -427,4 +427,104 @@ describe('Recast Parsing', () => {
 
       a.b.c()`, 50)
   })
+
+  describe('original parser functions', () => {
+
+      const testParse = (source, output) => {
+        const result = cojs.parseRecast(source)
+
+        if(output.gives) {
+          expect(result.gives.sort()).to.eql(output.gives.sort())
+        }
+
+        if(output.takes) {
+          expect(result.takes.sort()).to.eql(output.takes.sort())
+        }
+      }
+
+
+
+      describe('basic gives', () => {
+
+        it('var a = 0', () => {
+          testParse(
+            `var a = 0`,
+            {gives: ['a'], takes: []}
+          )
+        })
+
+        it('var a = 0; const b = 12', () => {
+          testParse(
+            'var a = 0; const b = 12',
+            {gives: ['a', 'b'], takes: []}
+          )
+        })
+
+        it('a = 0; b = 2; c = 3', () => {
+          testParse(
+            'a = 0; b = 2; c = 3',
+            {gives: [], takes: []}
+          )
+        })
+
+      })
+
+
+      describe('edges', () => {
+
+        it('const a = b', () => {
+          testParse('const a = b',
+            {gives: ['a'], takes: ['b']}
+          )
+        })
+
+        it('const a = () => {b + c * 23}', () => {
+          testParse('const a = () => {b + c * 23}',
+            {gives: ['a'], takes: ['c', 'b']}
+          )
+        })
+
+        it('ignores reuse', () => {
+          testParse(`
+              const x = 123
+              const y = x * 1234
+            `,
+              {gives: ['x','y'], takes: []}
+            )
+        })
+
+        it('handles objects', () => {
+          testParse('const a = Math.random()',
+            {gives: ['a'], takes: ['Math']}
+          )
+        })
+      })
+
+      describe('takes', () => {
+
+        it('var a = b * 2', () => {
+          testParse('var a = b * 2',
+            {gives: ['a'], takes: ['b']}
+          )
+
+        })
+
+        it('var a = b * c * d * e * f', () => {
+          testParse('var a = b * c * d * e * f',
+            {gives: ['a'], takes: ['b', 'c', 'd', 'e', 'f']}
+          )
+        })
+
+        it('const el = {}; el.x = a', () => {
+          testParse('const el = {}; el.x = a',
+            {gives: ['el'], takes: ['a']}
+          )
+        })
+
+
+
+      })
+
+
+  })
 })

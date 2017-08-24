@@ -14,7 +14,6 @@ class Cell {
 
     this.gives = []
     this.takes = []
-    this.point = 0
 
 
     this.output = ''
@@ -34,22 +33,30 @@ class Cell {
     if(this.code != code) {
       this.dirtyParse = this.dirtyEval = true
       this.parseError = null
+
+      this.gives = []
+      this.takes = []
     }
     this.code = code
   }
 
   analyse() {
+    // this.gives = []
+    // this.takes = []
 
     try {
       // const result = parseRecast(this.code)
       this.parseResult = parseRecast(this.code)
 
+      this.dirtyParse = false
       this.gives = this.parseResult.gives
       this.takes = this.parseResult.takes
 
     } catch (e) {
       this.parseError = e.description
-      this.point = -1
+      console.log("PARSE", e)
+
+      this.evaluator.displayError(e.description || 'Error')
 
       if(this.listeners) {
         this.listeners.forEach(fn => {
@@ -71,21 +78,16 @@ class Cell {
           fn(null, '')
         })
       }
-      return
+      return Promise.reject("empty")
     }
 
     if(this.dirtyParse)
-      return console.error("won't evaluate: dirty parse")
+      return Promise.reject("won't evaluate: dirty parse")
 
     if(this.parseError)
-      return console.error("won't evaluate: parse error")
+      return Promise.reject("won't evaluate: parse error")
 
     const instrumented = this.parseResult.code
-      // this.code.slice(0, this.point)
-      //  + ';const ___=' +
-      // this.code.slice(this.point)
-
-    console.log("GIVING", this.gives)
 
     return this.evaluator.evaluate(
       instrumented,

@@ -121,8 +121,6 @@ const parse = (code) => {
 
   const out = recast.print(ast).code;
 
-  debug("GIVES:", gives)
-
   return {
     gives: Array.from(gives),
     takes: Array.from(takes),

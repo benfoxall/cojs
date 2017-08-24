@@ -73,6 +73,41 @@ class iframeEvaluator {
     return [srcGen, promise]
   }
 
+  // display an error in the iframe
+  displayError(htm) {
+    const src = `
+      <html><head>
+      <style>
+      body {
+        font-family:'Roboto Mono', monospace;
+        margin:0;
+      }
+      #error {
+        padding: 1.3em;
+        color: #c00;
+        font-size: 0.8em
+      }
+      </style>
+      </head>
+      <body>
+        <div id="error">${htm}</div>
+        <script>
+          window.parent.postMessage({
+            frame_id: ${this.id},
+            type: 'resize'
+          }, '*')
+        </script>
+      </body>
+      </html>`
+
+    const blob = new Blob([src], {type: 'text/html'})
+    const url = URL.createObjectURL(blob)
+
+    if(this.iframe.src) URL.revokeObjectURL(this.iframe.src)
+
+    this.iframe.src = url
+  }
+
   evaluate(code, returns, state = {}) {
 
     debug(`executing: \n${code}`)

@@ -50,6 +50,11 @@ const parse = (code) => {
       if(found && !gives.has(found.name)) takes.add(found.name)
     }
 
+    if(node.right && node.right.type == 'Identifier') {
+      if(!gives.has(node.right.name))
+      takes.add(node.right.name)
+    }
+
   })
 
   // console.log(ast)

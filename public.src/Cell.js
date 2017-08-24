@@ -45,6 +45,7 @@ class Cell {
       this.point = result._
 
       this.gives = result.gives
+      this.takes = result.takes
 
     } catch (e) {
       this.parseError = e.description
@@ -84,11 +85,15 @@ class Cell {
        + ';const ___=' +
       this.code.slice(this.point)
 
+
     return this.evaluator.evaluate(
       instrumented,
       ['___'].concat(this.gives),
       state
-    )
+    ).then(r => {
+      this.dirtyEval = false
+      return r
+    })
 
   }
 

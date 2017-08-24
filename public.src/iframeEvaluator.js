@@ -76,6 +76,7 @@ class iframeEvaluator {
   evaluate(code, returns, state = {}) {
 
     debug(`executing: \n${code}`)
+    debug(`returns: \n${returns}`)
 
     const callback_id = this.callback_id++
 
@@ -114,6 +115,8 @@ class iframeEvaluator {
             `const ${k} = window.parent.state.${k};`
           ).join(' ')}
 
+          let __VALUE
+          const __R = (v) => __VALUE = v
         </script>
         <script>
           ${processed}
@@ -123,10 +126,14 @@ class iframeEvaluator {
 
           ${_ready()}
 
-          if(typeof(___) != 'undefined') {
+          if(__VALUE) {
             const div = document.createElement('div')
             div.id = 'output'
-            div.innerText = ___
+            div.innerText = __VALUE
+
+            if(__VALUE.toString() == '[object Object]') {
+              div.innerText = JSON.stringify(__VALUE, null, 5)
+            }
             document.body.appendChild(div)
           }
 
@@ -150,7 +157,6 @@ class iframeEvaluator {
       ready.then(
         () => {
           const result = this.iframe.contentWindow.returns
-          delete result.___
           debug(`output: ${Object.keys(result)}`)
           resolve(result)
         }

@@ -1,4 +1,4 @@
-import parse from './parse'
+import parseRecast from './parse-recast'
 import evaluate from './evaluate'
 import iframeEvaluator from './iframeEvaluator'
 
@@ -41,11 +41,11 @@ class Cell {
   analyse() {
 
     try {
-      const result = parse(this.code)
-      this.point = result._
+      // const result = parseRecast(this.code)
+      this.parseResult = parseRecast(this.code)
 
-      this.gives = result.gives
-      this.takes = result.takes
+      this.gives = this.parseResult.gives
+      this.takes = this.parseResult.takes
 
     } catch (e) {
       this.parseError = e.description
@@ -80,15 +80,16 @@ class Cell {
     if(this.parseError)
       return console.error("won't evaluate: parse error")
 
-    const instrumented =
-      this.code.slice(0, this.point)
-       + ';const ___=' +
-      this.code.slice(this.point)
+    const instrumented = this.parseResult.code
+      // this.code.slice(0, this.point)
+      //  + ';const ___=' +
+      // this.code.slice(this.point)
 
+    console.log("GIVING", this.gives)
 
     return this.evaluator.evaluate(
       instrumented,
-      ['___'].concat(this.gives),
+      this.gives,
       state
     ).then(r => {
       this.dirtyEval = false

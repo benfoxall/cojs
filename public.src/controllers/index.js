@@ -1,10 +1,11 @@
 import Cell from '../Cell'
 import throttle from 'lodash.throttle'
+// import {throttle} from 'lodash-es' (takes over a second!!)
+
+import {CancelablePromiseChain} from '../util'
 
 import _debug from 'debug'
 const debug = _debug('contoller')
-
-// import {throttle} from 'lodash-es' (takes over a second!!)
 
 
 class Controller {
@@ -112,9 +113,6 @@ class StateController extends Controller {
 class SequenceController extends Controller {
   constructor() {
     super()
-    this.state = {}
-
-    this.last = Promise.resolve()
 
     this.handle = throttle(this.handle.bind(this), 600)
   }
@@ -144,7 +142,7 @@ class SequenceController extends Controller {
                 memo[k] = undefined
                 return memo
               }, {})
-              
+
               return Object.assign({}, state, blank)
             })
         )
@@ -155,11 +153,73 @@ class SequenceController extends Controller {
 }
 
 
+class SequenceCacheController extends Controller {
+  constructor() {
+    super()
+    this.handle = throttle(this.handle.bind(this), 10)
+    this.resultCache = new Map
+  }
+
+  handle() {
+    debug(`handle ${this.cells.length}`)
+
+    const any_dirty = !this.cells.every(cell =>
+      !cell.dirtyParse
+    )
+
+
+    if(any_dirty) {
+
+      if(this.chain) {
+        debug("cancelling previous chain")
+        this.chain.cancel()
+      }
+
+      this.chain = new CancelablePromiseChain({})
+
+      let found
+      this.cells.forEach(cell => {
+
+        if(cell.dirtyParse) {
+          found = true
+
+          cell.analyse()
+        }
+
+        if(!found && this.resultCache.has(cell)){
+          debug("skip", this.resultCache.get(cell))
+          this.chain.add((s) =>
+            Object.assign({}, s, this.resultCache.get(cell))
+          )
+
+          return
+        }
+
+        this.chain.add((state) => {
+          return cell.evaluate(state)
+            .catch((e) => {
+              return cell.gives.reduce((memo, k) => {
+                memo[k] = undefined
+                return memo
+              }, {})
+            })
+            .then(result => {
+              this.resultCache.set(cell, result)
+              return Object.assign({}, state, result)
+            })
+        })
+
+      })
+
+    }
+  }
+}
 
 
 
 export {
   BasicController,
   StateController,
-  SequenceController
+  SequenceController,
+  SequenceCacheController
 }

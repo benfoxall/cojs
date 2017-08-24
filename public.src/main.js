@@ -6,14 +6,15 @@ import iframeEvaluator from './iframeEvaluator'
 import {
   BasicController,
   StateController,
-  SequenceController
+  SequenceController,
+  SequenceCacheController
 } from './controllers'
 
 
 const s = document.currentScript
 if(s && s.hasAttribute('data-render')) {
 
-  const controller = new SequenceController
+  const controller = new SequenceCacheController
 
   render(document.body, controller)
 }

@@ -307,7 +307,7 @@ describe('Parsing', () => {
       )
     })
 
-    it('cont el = {}; el.x = a', () => {
+    it('const el = {}; el.x = a', () => {
       testParse('const el = {}; el.x = a',
         {gives: ['el'], takes: ['a']}
       )
@@ -367,4 +367,44 @@ describe('Parsing', () => {
 
   })
 
+})
+
+
+
+describe('Recasting', () => {
+
+  xit('replises stuff', () => {
+
+    const modified = cojs.parseRecast(`12`)
+
+    expect(modified.code)
+      .to.be(`__R(12)`)
+
+  })
+
+  xit('replises stuff', () => {
+
+    const modified = cojs.parseRecast(`const a = 12`)
+
+    expect(modified.code)
+      .to.be(`const a = __R(12)`)
+
+  })
+
+
+
+  it('replises stuff', () => {
+
+    const modified = cojs.parseRecast(`
+const a = 12
+
+const f = a + 1234 + (() => 4)()
+
+document.createElement('foo')
+`)
+
+    expect(modified.code)
+      .to.be(`const a = __R(12)`)
+
+  })
 })

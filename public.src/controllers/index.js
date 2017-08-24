@@ -261,6 +261,7 @@ class GraphController extends Controller {
         .map(([from, to]) => to)
 
 
+
     for(let i = 0; i < invalidations.length; i++) {
       const cell = invalidations[i]
       expand(cell)
@@ -270,21 +271,11 @@ class GraphController extends Controller {
             debug("invalidation expansion", expansion.ref)
           }
         })
-
     }
-    //
-    // invalidations.forEach(cell => {
-    //   expand(cell)
-    //     .forEach(expansion => {
-    //       if(invalidations.indexOf(expansion) === -1) {
-    //         invalidations.push(expansion)
-    //         debug("invalidation expansion", expansion.ref)
-    //       }
-    //     })
-    // })
 
     console.log(invalidations.map(c => c.ref))
 
+    window.cells = this.cells
 
     if(this.chain) {
       debug("cancelling previous chain")
@@ -317,11 +308,7 @@ class GraphController extends Controller {
             return Object.assign({}, state, result)
           })
       })
-
     })
-
-
-
   }
 }
 

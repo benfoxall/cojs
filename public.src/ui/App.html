@@ -1,4 +1,30 @@
-<ul>
+<style media="screen">
+#fork {
+  position: absolute;
+  top:0;
+  left:0;
+  right:0;
+  text-align: center;
+  background: #e8e8e8;
+  padding: 1em;
+  font-size: .8em;
+  overflow: hidden;
+}
+#fork a {
+  color: #08f
+}
+ul.no-access{
+  margin-top: 3em;
+}
+</style>
+
+{{#if !has_access }}<div id="fork">
+  couldn't save changes to this session<br />
+  <a href="?{{session_id}}|">make a fresh copy</a>
+</div>
+{{/if}}
+
+<ul class='{{has_access ? 'access' : 'no-access'}}'>
   {{#each cells as cell @ref}}
     <Cell cell={{cell}} on:update='update(event)'/>
   {{/each}}
@@ -10,6 +36,14 @@
   import Cell from './Cell.html';
 
   export default {
+
+    data () {
+      return {
+        has_access: true,
+        code: ''
+      }
+    },
+
     components: { Cell },
 
     methods: {

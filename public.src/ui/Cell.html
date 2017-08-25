@@ -61,6 +61,9 @@ export default {
     })
 
 
+    // will be overwritten
+    this.get('cell').iframe.style.height = '1em';
+
     this.refs.output.appendChild(this.get('cell').iframe)
 
 

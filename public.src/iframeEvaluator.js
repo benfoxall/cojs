@@ -29,8 +29,8 @@ class iframeEvaluator {
       if(data.type == 'resize') {
 
         this.iframe.style.height = '1px'
-
-        this.iframe.style.height = (this.iframe.contentWindow.document.body.scrollHeight + 'px')
+        const h = this.iframe.contentWindow.document.body.scrollHeight
+        this.iframe.style.height = (h + 20 + 'px')
       }
       if(data.type == 'callback') {
         const fn = this.callbacks.get(data.callback_id)

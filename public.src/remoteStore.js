@@ -1,15 +1,17 @@
 import Connection from './Session'
 
-const getQueryString = () => {
-  return (document.location.search || '').replace('?', '')
-}
+const getQueryString = () =>
+  (document.location.search || '').replace('?', '')
 
-const setQueryString = (qs) => {
-  if(window.history)
-    window.history.pushState({}, null, '/?' + qs)
-  else
-    document.location = '/?' + qs
-}
+const setQueryString = (qs) =>
+  window.history.pushState({}, null, '/?' + qs)
+
+const getQueryStringParts = () =>
+  getQueryString().split('|')
+
+const setQueryStringParts = (parts) =>
+  setQueryString(parts.join('|'))
+
 
 
 const remoteStore = () => {
@@ -24,18 +26,60 @@ const remoteStore = () => {
     })
   }
 
-  const qs = getQueryString()
-  const connection = new Connection(qs)
+  // const qs = getQueryString()
 
-  if(!qs) connection.ready.then(setQueryString)
+  const qsp = getQueryStringParts()
 
-  connection
-    .fetch()
-    .then(items => {
-      items.forEach(item => {
-        fire('cell', item)
-      })
+  let connection
+
+  if(qsp.length == 1) {
+
+    connection = new Connection(qsp[0])
+
+    if(!qsp[0]) connection.ready.then(id => {
+      setQueryStringParts([id])
     })
+
+    connection
+      .fetch()
+      .then(items => {
+        items.forEach(item => {
+          fire('cell', item)
+        })
+      })
+
+
+  } else if(qsp.length == 2) {
+
+    console.log("WE HAVE A FORK")
+    // fork
+    const backing = new Connection(qsp[0])
+
+    connection = new Connection(qsp[1])
+
+    if(!qsp[1]) {
+      connection.ready.then(id => {
+        qsp[1] = id
+        setQueryStringParts(qsp)
+      })
+    }
+
+    backing
+      .fetch()
+      .then(items => {
+        items.forEach(item => {
+          fire('cell', item)
+        })
+      })
+      .then(() => connection.fetch())
+      .then(items => {
+        items.forEach(item => {
+          fire('cell', item)
+        })
+      })
+
+  }
+
 
   // TODO - handle invalid tokens
   const debounces = new Map
@@ -47,7 +91,7 @@ const remoteStore = () => {
   }
 
 
-  return { on, put }
+  return { on, put, connection }
 
 }
 

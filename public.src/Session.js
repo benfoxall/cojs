@@ -1,12 +1,17 @@
 const ENDPOINT = "https://api.cojs.co/v0"
 // const ENDPOINT = 'http://localhost:3000'
 
+const STATES = {
+  DISCONNECTED: 0,
+  CONNECTED: 1,
+  DENIED: 2
+}
+
 
 // Maybe "Connection" might be better
 class Session {
 
   constructor(id) {
-    // DISCONNECTED | DENIED | CONNECTED
     this.state = 'DISCONNECTED'
 
     this.id = id
@@ -27,7 +32,13 @@ class Session {
       })
     else {
       this.token = localStorage.getItem(`auth-${id}`)
-      // todo - handle no token & check token
+
+      if(!this.token) {
+        this.state = 'DENIED'
+      } else {
+        // todo validate first
+        this.state = 'CONNECTED'
+      }
     }
   }
 

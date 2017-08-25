@@ -134,6 +134,10 @@ class iframeEvaluator {
         font-family:'Roboto Mono', monospace;
         margin:0;
       }
+      body > * {
+        max-width: 100%;
+        max-height: 100%;
+      }
       #output {
         padding: 1.3em;
       }
@@ -169,7 +173,26 @@ class iframeEvaluator {
             if(__VALUE.toString() == '[object Object]') {
               div.innerText = JSON.stringify(__VALUE, null, 5)
             }
-            document.body.appendChild(div)
+
+            if (typeof __VALUE == 'function') {
+              div.innerText = 'Function'
+            }
+            if(__VALUE instanceof HTMLElement) {
+              document.body.appendChild(__VALUE)
+
+              if(__VALUE instanceof HTMLImageElement) {
+                __VALUE.addEventListener('load', () => {
+                  window.parent.postMessage({
+                    frame_id: ${this.id},
+                    type: 'resize'
+                  }, '*')
+                })
+              }
+
+            } else {
+              document.body.appendChild(div)
+            }
+
           }
 
           window.parent.postMessage({

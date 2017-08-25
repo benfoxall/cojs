@@ -7,6 +7,7 @@ import _debug from 'debug'
 const debug = _debug('parse:recast')
 
 const traverse = (rest, expand, check) => {
+  if(!rest.length) return
   const node = rest.pop()
   if(check(node)) return node
   const next = [].concat(expand(node)).concat(rest)
@@ -72,7 +73,7 @@ const parse = (code) => {
 
       const found = traverse(
         [node.callee],
-        n => n.object,
+        n => n.object || [],
         n => n && n.type == "Identifier"
       )
 

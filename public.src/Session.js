@@ -51,6 +51,10 @@ class Session {
 
 
   set(ref, code) {
+    if(this.state == 'DENIED')
+      return Promise.reject('unauthorised')
+
+
     return this.ready.then(() => fetch(`${ENDPOINT}/cells/${this.id}/${ref}`,
       {
         headers: {

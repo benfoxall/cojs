@@ -28,19 +28,14 @@ const render = (node, controller) => {
       store.put(cell)
   })
 
-  // setTimeout(() => {
 
-  console.log("STATE", store.connection.state)
+  // console.log("STATE", store.connection.state)
   if(store.connection.state == 'DENIED') {
     app.set({
       has_access: false,
       session_id: store.connection.id
     })
   }
-
-  // }, 10)
-
-  // TODO - handle access/forking
 
 
   app.on('add', () => { controller.add() })

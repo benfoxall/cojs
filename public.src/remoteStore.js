@@ -87,6 +87,10 @@ const remoteStore = () => {
     clearTimeout(debounces.get(cell.ref))
     debounces.set(cell.ref, setTimeout(() => {
       connection.set(cell.ref, cell.code)
+      .catch(e => {
+        console.log(`didn't save ${cell.ref} - ${e}`)
+      })
+
     }, 1000))
   }
 

@@ -273,7 +273,7 @@ class GraphController extends Controller {
         })
     }
 
-    console.log(invalidations.map(c => c.ref))
+    debug(invalidations.map(c => c.ref))
 
     window.cells = this.cells
 

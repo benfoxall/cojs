@@ -1,5 +1,4 @@
 import evaluate from './evaluate'
-import parse from './parse'
 import parseRecast from './parse-recast'
 import render from './render'
 import Session from './Session'
@@ -21,4 +20,4 @@ if(s && s.hasAttribute('data-render')) {
   render(document.body, controller)
 }
 
-export {evaluate, parse, parseRecast, render, Session, iframeEvaluator}
+export {evaluate, parseRecast, render, Session, iframeEvaluator}

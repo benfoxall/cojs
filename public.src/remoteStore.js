@@ -64,19 +64,28 @@ const remoteStore = () => {
       })
     }
 
-    backing
-      .fetch()
-      .then(items => {
-        items.forEach(item => {
-          fire('cell', item)
+    // reduce to an object keyed by ref
+    const to_o = arr =>
+      arr.reduce((o, item) => {
+        o[item.ref] = item;
+        return o
+      }, {})
+
+    Promise.all([
+      backing.fetch(),
+      connection.fetch()
+    ])
+    .then(([source, actual]) => {
+      const data = Object.assign(
+        to_o(source),
+        to_o(actual)
+      )
+
+      Object.keys(data)
+        .forEach(k => {
+          fire('cell', data[k])
         })
-      })
-      .then(() => connection.fetch())
-      .then(items => {
-        items.forEach(item => {
-          fire('cell', item)
-        })
-      })
+    })
 
   }
 

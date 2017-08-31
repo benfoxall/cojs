@@ -3,13 +3,7 @@ import parseRecast from './parse-recast'
 import render from './render'
 import Session from './Session'
 import iframeEvaluator from './iframeEvaluator'
-import {
-  BasicController,
-  StateController,
-  SequenceController,
-  SequenceCacheController,
-  GraphController
-} from './controllers'
+import { GraphController } from './controllers'
 
 
 const s = document.currentScript

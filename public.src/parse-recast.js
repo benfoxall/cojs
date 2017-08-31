@@ -4,7 +4,7 @@ const n = types.namedTypes
 const b = types.builders
 
 import _debug from 'debug'
-const debug = _debug('parse:recast')
+const debug = _debug('parser')
 
 const traverse = (rest, expand, check) => {
   if(!rest.length) return
@@ -17,7 +17,7 @@ const traverse = (rest, expand, check) => {
 
 const parse = (code) => {
 
-  debug('CODE:', '\n' + code)
+  debug('CODE: \n%s\n', code)
 
   const ast = recast.parse(code)
 
@@ -134,6 +134,9 @@ const parse = (code) => {
   })
 
   const out = recast.print(ast).code;
+
+  debug('Gives: %o', gives)
+  debug('Takes: %o', takes)
 
   return {
     gives: Array.from(gives),

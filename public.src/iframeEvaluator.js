@@ -165,23 +165,27 @@ class iframeEvaluator {
 
           ${_ready()}
 
-          if(__VALUE) {
+          function _print(obj) {
+            const prev = document.getElementById('output')
+            if(prev) prev.remove()
+
+
             const div = document.createElement('div')
             div.id = 'output'
-            div.innerText = __VALUE
+            div.innerText = obj
 
-            if(__VALUE.toString() == '[object Object]') {
-              div.innerText = JSON.stringify(__VALUE, null, 5)
+            if(obj.toString() == '[object Object]') {
+              div.innerText = JSON.stringify(obj, null, 5)
             }
 
-            if (typeof __VALUE == 'function') {
+            if (typeof obj == 'function') {
               div.innerText = 'Function'
             }
-            if(__VALUE instanceof HTMLElement) {
-              document.body.appendChild(__VALUE)
+            if(obj instanceof HTMLElement) {
+              document.body.appendChild(obj)
 
-              if(__VALUE instanceof HTMLImageElement) {
-                __VALUE.addEventListener('load', () => {
+              if(obj instanceof HTMLImageElement) {
+                obj.addEventListener('load', () => {
                   window.parent.postMessage({
                     frame_id: ${this.id},
                     type: 'resize'
@@ -193,6 +197,20 @@ class iframeEvaluator {
               document.body.appendChild(div)
             }
 
+            window.parent.postMessage({
+              frame_id: ${this.id},
+              type: 'resize'
+            }, '*')
+          }
+
+          if(__VALUE) {
+
+            if(__VALUE instanceof Promise) {
+              _print('...')
+              __VALUE.then(_print, _print)
+            } else {
+              _print(__VALUE)
+            }
           }
 
           window.parent.postMessage({

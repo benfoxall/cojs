@@ -220,7 +220,11 @@ class iframeEvaluator {
         }
       ).catch(reject)
 
-      error.then(reject).catch(() => {})
+      error.then(e => {
+        this.displayError(e.toString())
+      })
+      .then(reject)
+      .catch(() => {})
     })
     return response
 

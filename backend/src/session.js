@@ -40,6 +40,15 @@ module.exports.create = (event, context, callback) => {
 }
 
 
+const Pusher = require('pusher');
+
+var pusher = new Pusher({
+  appId: process.env.pusher_app_id,
+  key: process.env.pusher_key,
+  secret: process.env.pusher_secret,
+  cluster: process.env.pusher_cluster,
+  encrypted: true
+});
 
 const forbidden = (error, callback) => {
   const {name, message} = error
@@ -108,6 +117,11 @@ module.exports.update = (event, context, callback) => {
           "Access-Control-Allow-Origin" : "*"
         },
         body: JSON.stringify(updated)
+      })
+
+      pusher.trigger(session, 'update', {
+        ref: parseInt(ref, 10),
+        code: event.body
       })
     })
 

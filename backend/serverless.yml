@@ -19,6 +19,10 @@ provider:
   environment:
     DYNAMODB_TABLE: ${self:service}-${opt:stage, self:provider.stage}-cells
     JWT_SECRET: ${file(./config.yml):jwt_secret}
+    pusher_app_id: ${file(./config.yml):pusher_app_id}
+    pusher_key: ${file(./config.yml):pusher_key}
+    pusher_secret: ${file(./config.yml):pusher_secret}
+    pusher_cluster: ${file(./config.yml):pusher_cluster}
   iamRoleStatements:
     - Effect: Allow
       Action:

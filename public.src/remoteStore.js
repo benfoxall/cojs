@@ -49,17 +49,18 @@ const remoteStore = () => {
       })
 
 
-  } else if(qsp.length == 2) {
+  } else if(qsp.length > 1) {
 
     console.log("WE HAVE A FORK")
-    // fork
-    const backing = new Connection(qsp[0])
 
-    connection = new Connection(qsp[1])
+    const connections = qsp.map(s => new Connection(s))
 
-    if(!qsp[1]) {
+    // the last one is the current session
+    connection = connections[connections.length - 1]
+
+    if(!connection.id) {
       connection.ready.then(id => {
-        qsp[1] = id
+        qsp[qsp.length - 1] = id
         setQueryStringParts(qsp)
       })
     }
@@ -71,15 +72,14 @@ const remoteStore = () => {
         return o
       }, {})
 
-    Promise.all([
-      backing.fetch(),
-      connection.fetch()
-    ])
-    .then(([source, actual]) => {
-      const data = Object.assign(
-        to_o(source),
-        to_o(actual)
+    Promise.all(
+      connections.map(
+        connection => connection.fetch()
+          .then(to_o)
       )
+    )
+    .then((responses) => {
+      const data = Object.assign.apply(Object, responses)
 
       Object.keys(data)
         .forEach(k => {

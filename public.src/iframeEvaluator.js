@@ -221,7 +221,8 @@ class iframeEvaluator {
       ).catch(reject)
 
       error.then(e => {
-        this.displayError(e.toString())
+        this.displayError(e.toString());
+        return e
       })
       .then(reject)
       .catch(() => {})

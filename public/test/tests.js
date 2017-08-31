@@ -371,6 +371,13 @@ describe('Recast Parsing', () => {
         })
 
 
+        it('[a,b].join(" ")', () => {
+          testParse('[a,b].join(" ")',
+            {gives: [], takes: ['a', 'b']}
+          )
+        })
+
+
 
       })
 

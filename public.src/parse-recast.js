@@ -58,6 +58,19 @@ const parse = (code) => {
       this.traverse(path)
     },
 
+    visitArrayExpression: function(path) {
+      const node = path.node
+
+      node.elements.forEach(element => {
+        if(element.type == 'Identifier') {
+          if(!gives.has(element.name))
+          takes.add(element.name)
+        }
+      })
+
+      this.traverse(path)
+    },
+
     visitExpressionStatement: function(path) {
       const node = path.node.expression
       if(node.right && node.right.type == 'Identifier') {

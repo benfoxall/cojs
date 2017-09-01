@@ -16,6 +16,8 @@ class Session {
 
     this.id = id
 
+    this.cached = null
+
     this.ready = Promise.resolve(id)
 
     if(!id)
@@ -75,6 +77,7 @@ class Session {
         method: "GET"
       })
       .then(res => res.json())
+      .then(json => this.cached = json)
     )
   }
 

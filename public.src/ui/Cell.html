@@ -66,39 +66,7 @@ export default {
 
     this.refs.output.appendChild(this.get('cell').iframe)
 
-
     let lastValue
-    const listener = (e) => {
-      if(lastValue == editable.value) return
-      lastValue = editable.value
-
-      console.log("LISTNEER FIRED", e)
-
-      this.fire('update',
-        {
-          code: editable.value,
-          ref: this.get('cell').ref
-        }
-      )
-
-    }
-
-    this.get('cell').addOutputListener((err, output) => {
-      this.set({
-        error: !!err,
-        output: err || output
-      })
-
-    })
-
-    // editable.addEventListener("DOMNodeInserted", listener, false)
-    // editable.addEventListener("DOMNodeRemoved", listener, false)
-    // editable.addEventListener("DOMCharacterDataModified", listener, false)
-
-
-    editable.addEventListener("keydown", listener, false)
-    editable.addEventListener("keyup", listener, false)
-    editable.addEventListener("change", listener, false)
 
   }
 }

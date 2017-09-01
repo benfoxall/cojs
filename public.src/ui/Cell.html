@@ -15,12 +15,33 @@ iframe {
   /*margin-top: auto;*/
   max-height: 50vh
 }
+.input{
+  position: relative;
+  white-space: normal;
+}
+.revert {
+  width: 45px;
+  height: 45px;
+  position: absolute;
+  right: 0;
+  top:0;
+  z-index: 1;
+  cursor: pointer;
+  background-image: url(revert.svg);
+  opacity: .5;
+  transition: all .5s;
+
+}
+.revert:hover {
+  opacity: 1
+}
 </style>
 
 
 <li class="cell">
   <div class="input">
     <textarea ref:editor>{{code}}</textarea>
+    {{#if revertable}}<div class="revert" on:click='revert()'></div>{{/if}}
   </div>
   <div ref:output class="output" style="color: {{error?'#c00':''}}"></div>
 </li>
@@ -31,7 +52,20 @@ export default {
   data() {
     return {
       code: '',
-      output: ''
+      revertable: false
+    }
+  },
+  methods: {
+    revert() {
+      console.log("REVERT", this.get('cell').revertCode)
+
+      this.set({revertable: false})
+
+      this.get('cm')
+        .setValue(this.get('cell').revertCode)
+
+      // TODO: the current cell should be removed
+      // to open for updates
     }
   },
 
@@ -40,12 +74,19 @@ export default {
     this.set({code: this.get('cell').code})
     this.set({output: this.get('cell').output})
 
+    const cell = this.get('cell')
+
+    if(cell.hasUpstream && !cell.isUpstream) {
+      this.set({revertable: true})
+    }
 
     const editable = this.refs.editor
 
     const cm = CodeMirror.fromTextArea(editable, {
       viewportMargin: Infinity
     })
+
+    this.set({cm: cm})
 
     cm.on('changes', (e) => {
       const value = cm.getValue()
@@ -58,6 +99,10 @@ export default {
           ref: this.get('cell').ref
         }
       )
+
+      if(cell.hasUpstream && cell.revertCode != value) {
+        this.set({revertable: true})
+      }
     })
 
 

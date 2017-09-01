@@ -16,16 +16,18 @@ class Controller {
     this.handle()
   }
 
-  set(ref, code, upstream) {
+  set(ref, code, isUpstream, upstreamValue) {
 
     if(!this.cells[ref]) {
-      this.cells[ref] = new Cell({ref, code})
+      this.cells[ref] = new Cell({
+        ref, code, isUpstream, upstreamValue
+      })
       this.fire('added', this.cells)
     }
     else this.cells[ref].setCode(code)
 
     this.handle()
-    this.fire('cell-updated', this.cells[ref], upstream)
+    this.fire('cell-updated', this.cells[ref], isUpstream)
   }
 
   add() {

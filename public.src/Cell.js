@@ -11,15 +11,16 @@ class Cell {
 
     this.dirtyParse = false
     this.dirtyEval = false
+    this.parseError = null
 
     this.gives = []
     this.takes = []
 
-
     this.output = ''
-    this.state = {}
 
-    this.parseError = null
+    this.isUpstream = options.isUpstream
+    this.hasUpstream = !!options.hasUpstream
+    this.revertCode = options.hasUpstream && options.hasUpstream.code
 
     this.iframe = document.createElement('iframe')
     this.evaluator = new iframeEvaluator(this.iframe)
@@ -58,11 +59,11 @@ class Cell {
 
       this.evaluator.displayError(e.description || 'Error')
 
-      if(this.listeners) {
-        this.listeners.forEach(fn => {
-          fn(this.parseError)
-        })
-      }
+      // if(this.listeners) {
+      //   this.listeners.forEach(fn => {
+      //     fn(this.parseError)
+      //   })
+      // }
 
     } finally {
       this.dirtyParse = false
@@ -73,11 +74,11 @@ class Cell {
   evaluate(state) {
 
     if(this.code.trim() == ''){
-      if(this.listeners) {
-        this.listeners.forEach(fn => {
-          fn(null, '')
-        })
-      }
+      // if(this.listeners) {
+      //   this.listeners.forEach(fn => {
+      //     fn(null, '')
+      //   })
+      // }
       return Promise.reject("empty")
     }
 
@@ -100,10 +101,10 @@ class Cell {
 
   }
 
-  addOutputListener(fn) {
-    (this.listeners = this.listeners || [])
-    .push(fn)
-  }
+  // addOutputListener(fn) {
+  //   (this.listeners = this.listeners || [])
+  //   .push(fn)
+  // }
 
   // addCodeListener(fn) {
   //   (this.code_listeners = this.code_listeners || [])

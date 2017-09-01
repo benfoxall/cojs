@@ -123,8 +123,20 @@ const remoteStore = () => {
     }, 1000))
   }
 
+  const rm = (cell) => {
+    clearTimeout(debounces.get(cell.ref))
 
-  return { on, put, connection, getUpstream }
+    connection.delete(cell.ref)
+    .then(c => {
+      console.log("DELETED", cell.ref)
+    })
+    .catch(e => {
+      console.log(`didn't delete ${cell.ref} - ${e}`)
+    })
+  }
+
+
+  return { on, put, rm, connection, getUpstream }
 
 }
 

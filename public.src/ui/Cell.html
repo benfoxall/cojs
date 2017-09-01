@@ -61,6 +61,8 @@ export default {
 
       this.set({revertable: false})
 
+      this.deleteOnUpdate = true
+
       this.get('cm')
         .setValue(this.get('cell').revertCode)
 
@@ -96,9 +98,12 @@ export default {
       this.fire('update',
         {
           code: value,
-          ref: this.get('cell').ref
+          ref: this.get('cell').ref,
+          deleted: this.deleteOnUpdate
         }
       )
+
+      this.deleteOnUpdate = false
 
       if(cell.hasUpstream && cell.revertCode != value) {
         this.set({revertable: true})

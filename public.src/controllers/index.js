@@ -16,7 +16,7 @@ class Controller {
     this.handle()
   }
 
-  set(ref, code, isUpstream, hasUpstream) {
+  set(ref, code, isUpstream, hasUpstream, deleted) {
 
     if(!this.cells[ref]) {
       this.cells[ref] = new Cell({
@@ -27,7 +27,7 @@ class Controller {
     else this.cells[ref].setCode(code)
 
     this.handle()
-    this.fire('cell-updated', this.cells[ref], isUpstream)
+    this.fire('cell-updated', this.cells[ref], isUpstream, deleted)
   }
 
   add() {

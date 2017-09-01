@@ -71,6 +71,25 @@ class Session {
 
   }
 
+  delete(ref) {
+    if(this.state == 'DENIED')
+      return Promise.reject('unauthorised')
+
+
+    return this.ready.then(() => fetch(`${ENDPOINT}/cells/${this.id}/${ref}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${this.token}`
+        },
+        method: "DELETE",
+        body: ''
+      })
+    )
+    .then(res => res.status == 200 ? res : res.json().then(Promise.reject.bind(Promise)))
+    .then(res => res.json())
+
+  }
+
   fetch() {
     return this.ready.then(() => fetch(`${ENDPOINT}/cells/${this.id}`,
       {

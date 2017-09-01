@@ -23,9 +23,15 @@ const render = (node, controller) => {
     controller.set(cell.ref, cell.code, upstream, upstreamValue)
   })
 
-  controller.on('cell-updated', (cell, upstream, ok) => {
-    if(!upstream)
-      store.put(cell)
+
+  controller.on('cell-updated', (cell, upstream, deleted) => {
+    if(!upstream) {
+      if(deleted) {
+        store.rm(cell)
+      } else {
+        store.put(cell)
+      }
+    }
   })
 
 
@@ -41,7 +47,7 @@ const render = (node, controller) => {
   app.on('add', () => { controller.add() })
 
   app.on('update', (cell) => {
-    controller.set(cell.ref, cell.code)
+    controller.set(cell.ref, cell.code, null, null, cell.deleted)
   })
 
 

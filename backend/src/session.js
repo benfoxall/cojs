@@ -132,6 +132,66 @@ module.exports.update = (event, context, callback) => {
 }
 
 
+
+module.exports.delete = (event, context, callback) => {
+
+  const auth = event.headers.Authorization || ''
+  const [_bearer, token] = auth.split(' ')
+
+  const {session, ref} = event.pathParameters
+
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+
+    if(err)
+      forbidden(err, callback)
+
+
+    if(decoded.session != session)
+      forbidden({
+        name: 'TokenMismatchError',
+        message: `session ${decoded.session} does not match`
+      }, callback)
+
+
+
+    // TODO - handle bad data & validation
+
+    const params = {
+      TableName: process.env.DYNAMODB_TABLE,
+      Key: {
+        session: `a-${session}`,
+        ref: parseInt(ref, 10)
+      }
+    }
+
+    // return new Promise((resolve, reject) => {
+    db.delete(params, (error) => {
+
+      if (error) {
+        console.error(error);
+        callback(new Error('Couldn\'t delete item.'));
+        return;
+      }
+
+      callback(null, {
+        statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin" : "*"
+        },
+        body: JSON.stringify({deleted: true, session, ref})
+      })
+
+      pusher.trigger(session, 'delete', {
+        ref: parseInt(ref, 10)
+      })
+    })
+
+  })
+}
+
+
+
 module.exports.fetch = (event, context, callback) => {
 
   var params = {

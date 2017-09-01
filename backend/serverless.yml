@@ -52,6 +52,14 @@ functions:
           method: post
           cors: true
 
+  delete:
+    handler: src/session.delete
+    events:
+      - http:
+          path: cells/{session}/{ref}
+          method: delete
+          cors: true
+
   fetch:
     handler: src/session.fetch
     events:

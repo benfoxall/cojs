@@ -15,14 +15,13 @@ const setQueryStringParts = (parts) =>
 
 
 const remoteStore = () => {
-
   const listeners = []
   const on = (event, fn) => {
     listeners.push([event, fn])
   }
-  const fire = (event, payload) => {
+  const fire = (event, ...payload) => {
     listeners.forEach(([_event, fn]) => {
-      if(_event == event) fn(payload)
+      if(_event == event) fn.apply(null, payload)
     })
   }
 
@@ -31,6 +30,7 @@ const remoteStore = () => {
   const qsp = getQueryStringParts()
 
   let connection
+  let upstreams
 
   if(qsp.length == 1) {
 
@@ -57,6 +57,7 @@ const remoteStore = () => {
 
     // the last one is the current session
     connection = connections[connections.length - 1]
+    upstreams = connections.slice(0, -1)
 
     if(!connection.id) {
       connection.ready.then(id => {
@@ -81,13 +82,32 @@ const remoteStore = () => {
     .then((responses) => {
       const data = Object.assign.apply(Object, responses)
 
+      const session = responses[responses.length - 1]
+
       Object.keys(data)
         .forEach(k => {
-          fire('cell', data[k])
+
+          // const up = getUpstream(k)
+
+          // console.log("REVERTABE -- ", !session[k], !!getUpstream(k))
+          fire('cell', data[k], !session[k], getUpstream(k))
         })
     })
 
   }
+
+  // (for falling back)
+  // get the most recent upstream revision
+  const getUpstream = ref => {
+    let found
+    upstreams.forEach(connection => {
+      connection.cached.forEach(cell => {
+        if(cell.ref == ref) found = cell
+      })
+    })
+    return found
+  }
+
 
 
   // TODO - handle invalid tokens
@@ -104,7 +124,7 @@ const remoteStore = () => {
   }
 
 
-  return { on, put, connection }
+  return { on, put, connection, getUpstream }
 
 }
 

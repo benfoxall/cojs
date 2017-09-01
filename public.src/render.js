@@ -19,8 +19,8 @@ const render = (node, controller) => {
 
   // connect the state to remote
   const store = remoteStore()
-  store.on('cell', (cell) => {
-    controller.set(cell.ref, cell.code, true)
+  store.on('cell', (cell, upstream, upstreamValue) => {
+    controller.set(cell.ref, cell.code, upstream, upstreamValue)
   })
 
   controller.on('cell-updated', (cell, upstream, ok) => {

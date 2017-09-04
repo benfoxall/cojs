@@ -383,6 +383,12 @@ describe('Recast Parsing', () => {
           )
         })
 
+        it('const a = await b', () => {
+          testParse('const a = await b',
+            {gives: ['a'], takes: ['b']}
+          )
+        })
+
       })
 
 

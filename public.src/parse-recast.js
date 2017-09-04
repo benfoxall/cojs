@@ -17,6 +17,12 @@ const traverse = (rest, expand, check) => {
 
 const parse = (code) => {
 
+  // await is only allowed within an async function
+  code = `async function run() {
+    ${code};
+    return __RETURNS__
+  }`
+
   debug('CODE: \n%s\n', code)
 
   const ast = recast.parse(code)
@@ -106,6 +112,15 @@ const parse = (code) => {
       })
 
       this.traverse(path)
+    },
+
+    visitAwaitExpression: function(path) {
+      const node = path.node
+      if(node.argument.type == 'Identifier'){
+        const found = node.argument
+        if(found && !gives.has(found.name)) takes.add(found.name)
+      }
+      this.traverse(path)
     }
   })
 
@@ -144,9 +159,38 @@ const parse = (code) => {
       this.traverse(path)
     },
 
+    visitReturnStatement: function(path) {
+      const node = path.node
+
+      // console.log("RETURNS", node.argument)
+
+      if(node.argument && (node.argument.name == "__RETURNS__")) {
+        const properties = []
+
+        gives.forEach(v => {
+          properties.push(
+            b.property('init',
+              b.identifier(v),
+              b.identifier(v)
+            )
+          )
+        })
+
+        const o = b.objectExpression(properties)
+
+        path.get('argument').replace(o)
+
+        return false
+      }
+
+      this.traverse(path)
+    }
+
   })
 
   const out = recast.print(ast).code;
+
+  debug("rewritten", out)
 
   debug('Gives: %o', gives)
   debug('Takes: %o', takes)

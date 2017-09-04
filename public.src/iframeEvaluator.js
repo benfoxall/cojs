@@ -130,8 +130,8 @@ class iframeEvaluator {
       .filter(k => k != '___')
 
 
-    const [_error, error] = this.generateCallback(500, expando)
-    const [_ready, ready] = this.generateCallback(500, expando)
+    const [_error, error] = this.generateCallback(1500, expando)
+    const [_ready, ready] = this.generateCallback(1500, expando)
 
     const src = `
       <html><head>
@@ -171,9 +171,12 @@ class iframeEvaluator {
           ${processed}
         </script>
         <script>
-          window.returns = {${returns.join(', ')}}
+          run()
+            .then(result => {
+              window.returns = result;
 
-          ${_ready()}
+              ${_ready()}
+            
 
           function _print(obj) {
             const prev = document.getElementById('output')
@@ -233,6 +236,9 @@ class iframeEvaluator {
             frame_id: ${this.id},
             type: 'resize'
           }, '*')
+
+        })
+
 
         </script>
       </body></html>

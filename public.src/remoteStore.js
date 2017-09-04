@@ -54,6 +54,13 @@ const remoteStore = () => {
 
   } else if(qsp.length > 1) {
 
+    qsp.forEach((s, i, arr) => {
+      if(arr.indexOf(s,i+1) != -1) {
+        throw new Error(`Duplicate session key: ${s}`)
+      }
+    })
+
+
     const connections = qsp.map(s => new Connection(s))
 
     // the last one is the current session

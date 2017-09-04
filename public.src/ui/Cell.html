@@ -85,7 +85,9 @@ export default {
     const editable = this.refs.editor
 
     const cm = CodeMirror.fromTextArea(editable, {
-      viewportMargin: Infinity
+      viewportMargin: Infinity,
+      tabindex: this.get('cell').ref
+      
     })
 
     this.set({cm: cm})

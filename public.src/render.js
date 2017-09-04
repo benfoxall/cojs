@@ -50,6 +50,17 @@ const render = (node, controller) => {
     controller.set(cell.ref, cell.code, null, null, cell.deleted)
   })
 
+  store.on('upstream-update', (s_id, ref) => {
+    // get the relevent cell
+
+    controller.cells.filter(cell => {
+      if(cell.ref == ref) {
+        cell.handleUpstreamChange(store)
+      }
+    })
+
+  })
+
 
 
 }

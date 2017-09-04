@@ -118,6 +118,11 @@ export default {
 
     let lastValue
 
+    // hack - revert when upstream and no local modify
+    this.get('cell').revertListener(() => {
+      this.revert()
+    })
+
   }
 }
 </script>

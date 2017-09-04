@@ -71,6 +71,11 @@ class Session {
 
   }
 
+  // an upstream set (updates cache)
+  upset(ref, code) {
+    this.cached[ref] = {ref, code}
+  }
+
   delete(ref) {
     if(this.state == 'DENIED')
       return Promise.reject('unauthorised')

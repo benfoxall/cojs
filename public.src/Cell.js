@@ -41,6 +41,24 @@ class Cell {
     this.code = code
   }
 
+
+  revertListener(fn) {
+    (this._revert_listeners = this._revert_listeners ||[])
+      .push(fn)
+  }
+
+  handleUpstreamChange(store) {
+
+    const shouldUpdate = this.code == this.revertCode
+
+    const next = store.getUpstream(this.ref)
+    this.revertCode = next.code
+
+    if(shouldUpdate) {
+      this._revert_listeners.forEach(fn => fn())
+    }
+  }
+
   analyse() {
     // this.gives = []
     // this.takes = []

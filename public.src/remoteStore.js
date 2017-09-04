@@ -1,5 +1,8 @@
 import Connection from './Session'
 
+import _debug from 'debug'
+const debug = _debug('remote_store')
+
 const getQueryString = () =>
   (document.location.search || '').replace('?', '')
 
@@ -51,8 +54,6 @@ const remoteStore = () => {
 
   } else if(qsp.length > 1) {
 
-    console.log("WE HAVE A FORK")
-
     const connections = qsp.map(s => new Connection(s))
 
     // the last one is the current session
@@ -92,7 +93,32 @@ const remoteStore = () => {
           // console.log("REVERTABE -- ", !session[k], !!getUpstream(k))
           fire('cell', data[k], !session[k], getUpstream(k))
         })
+
+
+      // Live forking
+      if(typeof Pusher != 'undefined') {
+        debug("Connecting to upstreams")
+
+        const socket = new Pusher('658119d533297d0ae6b1', {
+          cluster: 'eu'
+        })
+
+        upstreams.forEach(up => {
+          const channel = socket.subscribe(up.id)
+
+          channel.bind('update', function (data) {
+            // 1. update the session cache
+            up.upset(data.ref, data.code)
+
+            // 2. potentially update the ui
+            fire('upstream-update', up.id, data.ref)
+          })
+        })
+      }
     })
+
+
+
 
   }
 

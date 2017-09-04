@@ -187,6 +187,10 @@ class iframeEvaluator {
               div.innerText = JSON.stringify(obj, null, 5)
             }
 
+            if (obj === null) {
+              div.innerText = 'null'
+            }
+
             if (typeof obj == 'function') {
               div.innerText = 'Function'
             }
@@ -220,6 +224,9 @@ class iframeEvaluator {
             } else {
               _print(__VALUE)
             }
+          } else if(__VALUE===null){
+            _print('null')
+
           }
 
           p_${expando}.postMessage({

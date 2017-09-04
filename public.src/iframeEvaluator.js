@@ -199,7 +199,7 @@ class iframeEvaluator {
 
               if(obj instanceof HTMLImageElement) {
                 obj.addEventListener('load', () => {
-                  window.parent.postMessage({
+                  p_${expando}.postMessage({
                     frame_id: ${this.id},
                     type: 'resize'
                   }, '*')

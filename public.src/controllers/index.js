@@ -5,7 +5,7 @@ import throttle from 'lodash.throttle'
 import {CancelablePromiseChain} from '../util'
 
 import _debug from 'debug'
-const debug = _debug('contoller')
+const debug = _debug('controller')
 
 
 class Controller {

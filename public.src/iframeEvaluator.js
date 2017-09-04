@@ -54,11 +54,13 @@ class iframeEvaluator {
   // over a beer/wine/cocktail (you're buying, because I
   // just wrote this)
   //
-  generateCallback(timeout = 1000) {
+  generateCallback(timeout = 1000, expando) {
     const callback_id = this.callback_id++
 
+    const parent = expando ? `p_${expando}` : 'window.parent'
+
     const srcGen = (value = '""') => `
-      ;window.parent.postMessage({
+      ;${parent}.postMessage({
         frame_id: ${this.id},
         callback_id: ${callback_id},
         type: 'callback',
@@ -110,10 +112,14 @@ class iframeEvaluator {
 
   evaluate(code, returns, state = {}) {
 
+    const expando = Math.random().toString(32).slice(2)
+
     debug(`executing: \n${code}`)
     debug(`returns: \n${returns}`)
 
     const callback_id = this.callback_id++
+
+    loopProtect.method = `p_${expando}.protect`
 
     const processed = loopProtect.rewriteLoops(code)
 
@@ -124,8 +130,8 @@ class iframeEvaluator {
       .filter(k => k != '___')
 
 
-    const [_error, error] = this.generateCallback(500)
-    const [_ready, ready] = this.generateCallback(500)
+    const [_error, error] = this.generateCallback(500, expando)
+    const [_ready, ready] = this.generateCallback(500, expando)
 
     const src = `
       <html><head>
@@ -144,14 +150,18 @@ class iframeEvaluator {
       </style>
       </head><body>
         <script>
-          window.runnerWindow = window.parent
+          // window.runnerWindow = window.parent
+
+          const p_${expando} = window.parent
+
+          window.parent = null
 
           window.onerror = (err) => {
             ${_error('err')}
           }
 
           ${keys.map(k =>
-            `const ${k} = window.parent.state.${k};`
+            `const ${k} = p_${expando}.state.${k};`
           ).join(' ')}
 
           let __VALUE
@@ -168,7 +178,6 @@ class iframeEvaluator {
           function _print(obj) {
             const prev = document.getElementById('output')
             if(prev) prev.remove()
-
 
             const div = document.createElement('div')
             div.id = 'output'
@@ -197,7 +206,7 @@ class iframeEvaluator {
               document.body.appendChild(div)
             }
 
-            window.parent.postMessage({
+            p_${expando}.postMessage({
               frame_id: ${this.id},
               type: 'resize'
             }, '*')
@@ -213,7 +222,7 @@ class iframeEvaluator {
             }
           }
 
-          window.parent.postMessage({
+          p_${expando}.postMessage({
             frame_id: ${this.id},
             type: 'resize'
           }, '*')

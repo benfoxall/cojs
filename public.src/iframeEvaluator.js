@@ -69,7 +69,9 @@ class iframeEvaluator {
     `
     const promise = new Promise((resolve,reject) => {
       this.callbacks.set(callback_id, resolve)
-      setTimeout(reject, timeout)
+      // TODO (INCREDIBLY IMPORTANT): CANCEL THESE PROMISES
+      //       ON REEVALUATION
+      // setTimeout(reject, timeout)
     })
 
     return [srcGen, promise]
@@ -176,7 +178,7 @@ class iframeEvaluator {
               window.returns = result;
 
               ${_ready()}
-            
+
 
           function _print(obj) {
             const prev = document.getElementById('output')
@@ -249,16 +251,22 @@ class iframeEvaluator {
 
     if(this.iframe.src) URL.revokeObjectURL(this.iframe.src)
 
+    debug('RUNNING FRAME %d', this.id)
     this.iframe.src = url
 
     return new Promise((resolve, reject) => {
       ready.then(
         () => {
+          debug('RAN FRAME %d', this.id)
+
           const result = this.iframe.contentWindow.returns
           debug(`output: ${Object.keys(result)}`)
           resolve(result)
         }
-      ).catch(reject)
+      ).catch((err) => {
+        debug('FRAME ERROR %d %o', this.id, err)
+        reject(err)
+      })
 
       error.then(e => {
         this.displayError(e.toString());

@@ -93,6 +93,19 @@ const parse = (code) => {
       if(found && !gives.has(found.name)) takes.add(found.name)
 
       this.traverse(path)
+    },
+
+    visitTemplateLiteral: function(path) {
+
+      const node = path.node
+
+      node.expressions.forEach(expression => {
+        if(expression.type == 'Identifier') {
+          if(!gives.has(expression.name)) takes.add(expression.name)
+        }
+      })
+
+      this.traverse(path)
     }
   })
 

@@ -377,7 +377,11 @@ describe('Recast Parsing', () => {
           )
         })
 
-
+        it('`${a} & ${b + c} ${d}`', () => {
+          testParse('`${a} & ${b + c} ${d}`',
+            {gives: [], takes: ['a', 'b', 'c', 'd']}
+          )
+        })
 
       })
 

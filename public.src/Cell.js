@@ -55,7 +55,6 @@ class Cell {
 
     } catch (e) {
       this.parseError = e.description
-      console.log("PARSE", e)
 
       this.evaluator.displayError(e.description || 'Error')
 
@@ -73,14 +72,14 @@ class Cell {
 
   evaluate(state) {
 
-    if(this.code.trim() == ''){
-      // if(this.listeners) {
-      //   this.listeners.forEach(fn => {
-      //     fn(null, '')
-      //   })
-      // }
-      return Promise.reject("empty")
-    }
+    // if(this.code.trim() == ''){
+    //   // if(this.listeners) {
+    //   //   this.listeners.forEach(fn => {
+    //   //     fn(null, '')
+    //   //   })
+    //   // }
+    //   return Promise.reject("empty")
+    // }
 
     if(this.dirtyParse)
       return Promise.reject("won't evaluate: dirty parse")

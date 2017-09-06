@@ -23,6 +23,27 @@ if(s && s.hasAttribute('data-render')) {
     ga('send', 'pageview');
   }
 
+
+  if(window.parent !== window) {
+    window.addEventListener('message', (e) => {
+      // if there's no action, it's probably from an evalutation cell
+      if(!e.data.action) return null
+
+      if(e.data.action == 'config') {
+        const value = e.data.value
+        Object.assign(document.body.style, value.bodyStyle)
+      }
+    })
+    window.parent.postMessage({action: 'ready'}, '*')
+
+    // previous/next keys for presentations
+    window.addEventListener('keydown', e => {
+      if(['PageDown', 'PageUp'].indexOf(e.key) > -1) {
+        window.parent.postMessage({action: 'key', value: e.key}, '*')
+      }
+    })
+  }
+
 }
 
 export {evaluate, parseRecast, render, Session, iframeEvaluator}

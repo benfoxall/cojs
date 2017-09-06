@@ -4,11 +4,12 @@
     <meta charset="utf-8">
     <title>cojs</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style media="screen">ul{padding:0;list-style:none;margin:0}.input,.output{padding:1em;min-height:1em}#add{background:#fff;border:none;font-size:1em;width:3em;height:3em;cursor:pointer;font-weight:800;border-radius:50%;margin:auto;box-shadow:0 3px 6px rgba(0,0,0,.16),0 3px 6px rgba(0,0,0,.23);opacity:.5;transition:.2s}#add:hover{box-shadow:0 5px 6px rgba(0,0,0,.16),0 2px 9px rgba(0,0,0,.23);opacity:1}body{transition:1s;background:#e2e1e0;padding:5em;font-family:'Roboto Mono',monospace;text-align:center}.cell{white-space:pre;text-align:left;background:#fff;border-radius:2px;box-shadow:0 3px 6px rgba(0,0,0,.16),0 3px 6px rgba(0,0,0,.23);display:flex;margin-bottom:2em}.input{flex:2}.output{flex:1;border-left:1px solid #e2e1e0;background:#f1f1f1}@media only screen and (max-width :650px){body{padding:1em}.cell{flex-direction:column}.output{border-left:none;border-top:1px solid #e2e1e0}}@media (light-level:dim){body{background:#000}}textarea{font-family:'Roboto Mono',monospace;border:none;font-size:1em;}</style>
+    <style media="screen">ul{padding:0;list-style:none;margin:0}.input,.output{padding:1em;min-height:1em}#add{background:#fff;border:none;font-size:1em;width:3em;height:3em;cursor:pointer;font-weight:800;border-radius:50%;margin:auto;box-shadow:0 3px 6px rgba(0,0,0,.16),0 3px 6px rgba(0,0,0,.23);opacity:.5;transition:.2s}#add:hover{box-shadow:0 5px 6px rgba(0,0,0,.16),0 2px 9px rgba(0,0,0,.23);opacity:1}body{transition:0s;background:#e2e1e0;padding:5em;font-family:'Roboto Mono',monospace;text-align:center}.cell{white-space:pre;text-align:left;background:#fff;border-radius:2px;box-shadow:0 3px 6px rgba(0,0,0,.16),0 3px 6px rgba(0,0,0,.23);display:flex;margin-bottom:2em}.input{flex:2}.output{flex:1;border-left:1px solid #e2e1e0;background:#f1f1f1}@media only screen and (max-width :650px){body{padding:1em}.cell{flex-direction:column}.output{border-left:none;border-top:1px solid #e2e1e0}}@media (light-level:dim){body{background:#000}}textarea{font-family:'Roboto Mono',monospace;border:none;font-size:1em;}</style>
     <script>document.querySelector('head').appendChild(Object.assign(document.createElement('link'), {href:"https://fonts.googleapis.com/css?family=Roboto+Mono:400",rel:"stylesheet"}))
     </script>
   </head>
   <body>
+    <script>if(window.parent !== window) document.body.style.background = 'none'</script>
     <script defer src="https://js.pusher.com/4.1/pusher.min.js"></script>
     <script defer src="recast.js"></script>
     <script defer src="codemirror.js"></script>

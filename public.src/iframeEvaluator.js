@@ -240,6 +240,10 @@ class iframeEvaluator {
           }, '*')
 
         })
+      
+        .catch(e => {
+          window.onerror(e.message)
+        })
 
 
         </script>

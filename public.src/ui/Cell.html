@@ -87,7 +87,6 @@ export default {
     const cm = CodeMirror.fromTextArea(editable, {
       viewportMargin: Infinity,
       tabindex: this.get('cell').ref
-      
     })
 
     this.set({cm: cm})
@@ -124,6 +123,14 @@ export default {
     this.get('cell').revertListener(() => {
       this.revert()
     })
+
+
+    // another hack - force update
+
+    this.get('cell').addListener('force-update', (code) => {
+      cm.setValue(code)
+    })
+    
 
   }
 }

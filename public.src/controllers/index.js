@@ -30,6 +30,16 @@ class Controller {
     this.fire('cell-updated', this.cells[ref], isUpstream, deleted)
   }
 
+  setForce(ref, code, isUpstream, hasUpstream, deleted) {
+    const needsForce = !!this.cells[ref]
+
+    this.set(ref, code, isUpstream, hasUpstream, deleted)
+
+    if(needsForce) {
+      this.cells[ref].forceUpdate(code)
+    }
+  }
+
   add() {
     const ref = this.cells.length
     this.cells = this.cells.concat(new Cell({ref}))

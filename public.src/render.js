@@ -62,6 +62,13 @@ const render = (node, controller) => {
   })
 
 
+  // hooks for external ui
+  return {
+    set: (ref, code) => {
+      console.log("attempting set", {ref, code})
+      controller.setForce(ref, code, false, null)
+    }
+  }
 
 }
 

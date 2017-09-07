@@ -11,7 +11,7 @@ if(s && s.hasAttribute('data-render')) {
 
   const controller = new GraphController
 
-  render(document.body, controller)
+  const hooks = render(document.body, controller)
 
   if(document.location.origin.match('//cojs.co')) {
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -32,7 +32,25 @@ if(s && s.hasAttribute('data-render')) {
       if(e.data.action == 'config') {
         const value = e.data.value
         Object.assign(document.body.style, value.bodyStyle)
+
+        // iframe data-config
+        const iframeConfig = (value.config||'').split(' ')
+        if(iframeConfig.indexOf('no-add') > -1) {
+          document.querySelector('#add').style.display = 'none'
+        }
       }
+
+      if(e.data.action == 'add') {
+        const value = e.data.value
+        console.log("ADDING", e.data.value)
+        hooks.set(
+          e.data.value.ref,
+          e.data.value.code,
+        )
+      }
+
+
+
     })
     window.parent.postMessage({action: 'ready'}, '*')
 

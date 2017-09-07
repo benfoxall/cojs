@@ -28,6 +28,19 @@ class Cell {
     if(options.code) {
       this.setCode(options.code)
     }
+
+    this.listeners = []
+  }
+
+  addListener(event, fn) {
+    this.listeners.push([event, fn])
+  }
+  fire(event, ...payload) {
+    this.listeners.forEach(([e, fn]) => {
+      if(e == event) {
+        fn.apply(fn, payload)
+      }
+    })
   }
 
   setCode(code) {
@@ -39,6 +52,10 @@ class Cell {
       this.takes = []
     }
     this.code = code
+  }
+
+  forceUpdate(code) {
+    this.fire('force-update', code)
   }
 
 

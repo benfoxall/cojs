@@ -98,6 +98,15 @@ const parse = (code) => {
 
       if(found && !gives.has(found.name)) takes.add(found.name)
 
+      // TODO: add test `Array.from(x)` should take [x]
+      // any arguments that are identifiers
+      node.arguments.forEach(argument => {
+        if(argument.type == 'Identifier') {
+          if(!gives.has(argument.name))
+          takes.add(argument.name)
+        }
+      })
+
       this.traverse(path)
     },
 

@@ -30,13 +30,22 @@ const parse = (code) => {
   const gives = new Set
   const takes = new Set
 
+  const depth = path => {
+    let n = 0
+    while(path = path.parentPath) n++
+    return n
+  }
 
   // ANALYSE THE AST, PULLING OUT GIVES/TAKES
   types.visit(ast, {
     visitVariableDeclaration: function(path) {
-
       path.node.declarations.forEach((d, i) => {
-        gives.add(d.id.name)
+
+        // Only stash top level declarations
+        // IF SOMETHING'S BROKEN, IT'LL PROBABLY BE HERE
+        if(depth(path) == 7) {
+          gives.add(d.id.name)
+        }
 
         const node = d
         if(node.init.type == 'Identifier') {
@@ -153,7 +162,11 @@ const parse = (code) => {
 
 
         // also stash the variable name
-        gives.add(d.id.name)
+        // gives.add(d.id.name)
+        // IF SOMETHING'S BROKEN, IT'LL PROBABLY BE HERE
+        if(depth(path) == 7) {
+          gives.add(d.id.name)
+        }
       })
 
       this.traverse(path)

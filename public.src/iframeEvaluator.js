@@ -19,6 +19,8 @@ class iframeEvaluator {
 
     this.iframe.sandbox = 'allow-scripts allow-same-origin'
 
+    this.cancels = []
+
     window.addEventListener('message', this)
   }
 
@@ -69,9 +71,7 @@ class iframeEvaluator {
     `
     const promise = new Promise((resolve,reject) => {
       this.callbacks.set(callback_id, resolve)
-      // TODO (INCREDIBLY IMPORTANT): CANCEL THESE PROMISES
-      //       ON REEVALUATION
-      // setTimeout(reject, timeout)
+      this.cancels.push(reject)
     })
 
     return [srcGen, promise]
@@ -113,6 +113,9 @@ class iframeEvaluator {
   }
 
   evaluate(code, returns, state = {}) {
+
+    this.cancels.forEach(reject => reject())
+    this.cancels = []
 
     const expando = Math.random().toString(32).slice(2)
 
@@ -240,7 +243,7 @@ class iframeEvaluator {
           }, '*')
 
         })
-      
+
         .catch(e => {
           window.onerror(e.message)
         })

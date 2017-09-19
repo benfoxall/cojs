@@ -2,8 +2,8 @@
 <script>
   // don't allow blob: urls to have access
 
-  if (window.parent !== window && window.parent.location.protocol.match(/^https?/)) {
-    var prefix = window.parent.location.origin + '--';
+  if (window.parent !== window && document.referrer.match(/^https?/)) {
+    var prefix = document.referrer.match(/https?:\/\/(.*)\//)[1] + '--';
 
     // the payload handler
     var handle = function handle(payload) {

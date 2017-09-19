@@ -17,7 +17,7 @@ class Session {
     this.state = 'DISCONNECTED'
 
     // a localstore that can't be accessed by blob urls
-    this.frameStorage = new FrameStore()
+    this.frameStorage = new FrameStore(ENDPOINT)
 
     this.id = id
 

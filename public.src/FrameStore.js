@@ -9,9 +9,12 @@ class Deffered {
 // uses a proxy iframe for storage
 // without leaking to blob urls
 class FrameStore {
-  constructor() {
+  constructor(endpoint = '') {
     this.frame = document.createElement('iframe')
-    this.frame.src = '/proxy.html'
+
+    this.frame.src = `${endpoint}/proxy.html`
+
+    this.frame.sandbox = 'allow-scripts allow-same-origin'
     this.frame.style.display = 'none'
 
     this.rpcID = 0

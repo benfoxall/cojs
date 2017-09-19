@@ -229,3 +229,29 @@ module.exports.fetch = (event, context, callback) => {
   })
 
 }
+
+
+const fs = require('fs')
+const proxyHTM = new Promise(resolve =>
+  fs.readFile(__dirname + '/proxy.html', 'utf8',
+    (err, data) => resolve(data)
+  )
+)
+
+
+module.exports.proxy = (event, context, callback) => {
+
+  proxyHTM.then(htm => {
+
+    // todo - long-life cache
+    callback(null, {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'text/html'
+      },
+      body: htm
+    })
+
+  })
+
+}

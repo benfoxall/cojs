@@ -1,53 +1,52 @@
 <!DOCTYPE html>
 <script>
-  /* TODO transpile */
-
-
   // don't allow blob: urls to have access
-  if(
-    window.parent !== window &&
-    window.parent.location.protocol.match(/^https?/)
-  ) {
-    okay = true
 
-    const prefix = window.parent.location.origin + '--'
+  if (window.parent !== window && window.parent.location.protocol.match(/^https?/)) {
+    var prefix = window.parent.location.origin + '--';
 
     // the payload handler
-    const handle = (payload) => {
+    var handle = function handle(payload) {
 
       switch (payload.action) {
         case 'SET':
-          const {key, value} = payload.value
-          return localStorage.setItem(prefix + key, value)
+          var _payload$value = payload.value,
+              key = _payload$value.key,
+              value = _payload$value.value;
+
+          return localStorage.setItem(prefix + key, value);
         case 'GET':
-          return localStorage.getItem(prefix + payload.value)
+          return localStorage.getItem(prefix + payload.value);
         default:
-          console.error('Unhandled action %s', payload.action)
-          return Promise.reject('Unhandled action')
+          console.error('Unhandled action %s', payload.action);
+          return Promise.reject('Unhandled action');
       }
-    }
+    };
 
-    var channel = new MessageChannel()
+    var channel = new MessageChannel();
 
-    const port = channel.port1
+    var port = channel.port1;
 
-    port.onmessage = (e) => {
-      const {id, payload} = e.data
+    port.onmessage = function (e) {
+      var _e$data = e.data,
+          id = _e$data.id,
+          payload = _e$data.payload;
 
-      Promise.resolve(handle(payload))
-        .then(
-          value => port.postMessage({
-            id, value,
-            status: 'RESOLVED',
-          }),
-          value => port.postMessage({
-            id, value,
-            status: 'FAILED',
-          })
-        )
-    }
 
-    window.parent.postMessage('message-port', '*', [channel.port2])
+      Promise.resolve(handle(payload)).then(function (value) {
+        return port.postMessage({
+          id: id, value: value,
+          status: 'RESOLVED'
+        });
+      }, function (value) {
+        return port.postMessage({
+          id: id, value: value,
+          status: 'FAILED'
+        });
+      });
+    };
+
+    window.parent.postMessage('message-port', '*', [channel.port2]);
   }
 </script>
 <h1>Proxy</h1>

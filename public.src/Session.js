@@ -1,6 +1,8 @@
 const ENDPOINT = "https://api.cojs.co/v0"
 // const ENDPOINT = 'http://localhost:3000'
 
+import FrameStore from './FrameStore'
+
 const STATES = {
   DISCONNECTED: 0,
   CONNECTED: 1,
@@ -14,6 +16,9 @@ class Session {
   constructor(id) {
     this.state = 'DISCONNECTED'
 
+    // a localstore that can't be accessed by blob urls
+    this.frameStorage = new FrameStore()
+
     this.id = id
 
     this.cached = null
@@ -26,21 +31,24 @@ class Session {
         this.id = session
         this.token = token
 
-        localStorage.setItem(`auth-${session}`, token)
-
         this.state = 'CONNECTED'
 
-        return this.id
+        return this.frameStorage.setItem(`auth-${session}`, token)
+          .then(() => this.id)
+
       })
     else {
-      this.token = localStorage.getItem(`auth-${id}`)
-
-      if(!this.token) {
-        this.state = 'DENIED'
-      } else {
-        // todo validate first
-        this.state = 'CONNECTED'
-      }
+      this.ready = this.frameStorage.getItem(`auth-${id}`)
+        .then(token => {
+          if(token) {
+            this.token = token
+            this.state = 'CONNECTED'
+            return this.id
+          } else {
+            this.state = 'DENIED'
+            return null
+          }
+        })
     }
   }
 

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<script>
+  /* TODO transpile */
+
+
+  // don't allow blob: urls to have access
+  if(
+    window.parent !== window &&
+    window.parent.location.protocol.match(/^https?/)
+  ) {
+    okay = true
+
+    const prefix = window.parent.location.origin + '--'
+
+    // the payload handler
+    const handle = (payload) => {
+
+      switch (payload.action) {
+        case 'SET':
+          const {key, value} = payload.value
+          return localStorage.setItem(prefix + key, value)
+        case 'GET':
+          return localStorage.getItem(prefix + payload.value)
+        default:
+          console.error('Unhandled action %s', payload.action)
+          return Promise.reject('Unhandled action')
+      }
+    }
+
+    var channel = new MessageChannel()
+
+    const port = channel.port1
+
+    port.onmessage = (e) => {
+      const {id, payload} = e.data
+
+      Promise.resolve(handle(payload))
+        .then(
+          value => port.postMessage({
+            id, value,
+            status: 'RESOLVED',
+          }),
+          value => port.postMessage({
+            id, value,
+            status: 'FAILED',
+          })
+        )
+    }
+
+    window.parent.postMessage('message-port', '*', [channel.port2])
+  }
+</script>
+<h1>Proxy</h1>
